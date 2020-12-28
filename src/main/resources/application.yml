@@ -1,0 +1,21 @@
+server:
+  port: 8080
+  address: 127.0.0.1
+  servlet:
+    context-path: /api
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3310/chatmedb?createDatabaseIfNotExist=true&serverTimezone=UTC
+    password: ${DB_USERNAME}
+    username: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+# Json web token properties
+jwt:
+  expirationTime: 3600000
+  secret: secretForEncodingSignature
+  token:
+    header: Authorization
+    prefix: Bearer
