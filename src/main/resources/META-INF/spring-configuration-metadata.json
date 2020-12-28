@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "jwt.exp",
+      "type": "java.lang.String",
+      "description": "The expiration time claim identifies the expiration time on or after which the JWT MUST NOT be accepted for processing."
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "Secret for encoding token signature."
+    },
+    {
+      "name": "jwt.token.header",
+      "type": "java.lang.String",
+      "description": "Token http header"
+    },
+    {
+      "name": "jwt.token.prefix",
+      "type": "java.lang.String",
+      "description": "Token prefix"
+    }
+  ]
+}

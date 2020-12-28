@@ -14,8 +14,8 @@ spring:
 
 # Json web token properties
 jwt:
-  expirationTime: 3600000
-  secret: secretForEncodingSignature
+  exp: 3600000
+  secret: ${JWT_SECRET}
   token:
     header: Authorization
     prefix: Bearer
