@@ -69,4 +69,9 @@ public class User implements Serializable {
     public void setLogin(String login) {
         this.login = login.toLowerCase();
     }
+
+    // To lowercase the email before saving it to db.
+    public void setEmail(String email) {
+        this.email = email.toLowerCase();
+    }
 }

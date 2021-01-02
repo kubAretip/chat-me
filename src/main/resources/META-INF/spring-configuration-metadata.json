@@ -1,24 +1,14 @@
 {
   "properties": [
     {
-      "name": "jwt.exp",
+      "name": "jwt.validity-time-in-seconds",
       "type": "java.lang.String",
-      "description": "The expiration time claim identifies the expiration time on or after which the JWT MUST NOT be accepted for processing."
+      "description": "The token validity time in seconds. Default value is 900 seconds (15min)."
     },
     {
-      "name": "jwt.secret",
+      "name": "jwt.base64-secret",
       "type": "java.lang.String",
-      "description": "Secret for encoding token signature."
-    },
-    {
-      "name": "jwt.token.header",
-      "type": "java.lang.String",
-      "description": "Token http header"
-    },
-    {
-      "name": "jwt.token.prefix",
-      "type": "java.lang.String",
-      "description": "Token prefix"
+      "description": "Base64 secret for encoding token signature. The best practise is making the secret key as long as you hash. For example for HS256 algorithm secret key is 256 bits / 32 chars."
     }
   ]
 }

@@ -11,11 +11,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  profiles:
+    active: dev
+
+logging:
+  level:
+    pl:
+      chatme: debug
 
 # Json web token properties
 jwt:
-  exp: 3600000
-  secret: ${JWT_SECRET}
-  token:
-    header: Authorization
-    prefix: Bearer
+  validity-time-in-seconds: 86400 #24h
+  base64-secret: ${JWT_SECRET}
