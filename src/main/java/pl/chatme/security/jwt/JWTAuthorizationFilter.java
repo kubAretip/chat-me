@@ -41,7 +41,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
     // Reads the JWT from the authorization header and validate the token
     private UsernamePasswordAuthenticationToken getAuthentication(String tokenString) {
-
+        log.debug("Getting authentication from token {}", tokenString);
         if (tokenString != null) {
 
             var decodedToken = tokenProvider.decodeToken(tokenString);

@@ -80,7 +80,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         filter.setAuthenticationManager(authenticationManager());
         filter.setFilterProcessesUrl(AUTHENTICATE_ENDPOINT);
 
-
         return filter;
     }
 

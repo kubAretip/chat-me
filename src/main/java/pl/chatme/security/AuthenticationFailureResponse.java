@@ -11,11 +11,15 @@ import org.springframework.http.HttpStatus;
 final class AuthenticationFailureResponse {
 
     @JsonProperty("title")
-    private final String title = "Invalid credentials.";
+    private final String title = "Unsuccessful login";
 
     @JsonProperty("status")
     private final int status = HttpStatus.UNAUTHORIZED.value();
 
     @JsonProperty("details")
-    private final String details = "Invalid login or password.";
+    private String details = "Invalid login or password.";
+
+    public AuthenticationFailureResponse(String details) {
+        this.details = details;
+    }
 }
