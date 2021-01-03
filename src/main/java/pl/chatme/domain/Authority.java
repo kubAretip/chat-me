@@ -34,4 +34,11 @@ public class Authority implements Serializable {
     public void setName(String name) {
         this.name = name.toUpperCase();
     }
+
+    @Override
+    public String toString() {
+        return "Authority{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }

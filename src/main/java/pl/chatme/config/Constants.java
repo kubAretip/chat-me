@@ -5,6 +5,6 @@ package pl.chatme.config;
  */
 public final class Constants {
 
-    public static final String LOGIN_REGEX = "^[a-z0-9_-]$";
+    public static final String LOGIN_REGEX = "^[a-zA-Z0-9]*$";
 
 }

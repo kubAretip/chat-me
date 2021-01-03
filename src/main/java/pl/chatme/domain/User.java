@@ -1,6 +1,7 @@
 package pl.chatme.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,7 +29,7 @@ public class User implements Serializable {
     private Long id;
 
     @NotBlank
-    @Size(min = 1, max = 50)
+    @Size(min = 4, max = 50)
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Column(length = 50, unique = true, nullable = false)
     private String login;
@@ -65,13 +66,22 @@ public class User implements Serializable {
     )
     private Set<Authority> authorities;
 
-    // To lowercase the login before saving it to db.
-    public void setLogin(String login) {
-        this.login = login.toLowerCase();
-    }
-
     // To lowercase the email before saving it to db.
     public void setEmail(String email) {
         this.email = email.toLowerCase();
+    }
+
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", activated=" + activated +
+                ", authorities=" + authorities +
+                '}';
     }
 }

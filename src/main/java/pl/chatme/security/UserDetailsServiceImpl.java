@@ -41,7 +41,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         }
 
-        return userRepository.findOneWithAuthoritiesByLogin(login.toLowerCase())
+        return userRepository.findOneWithAuthoritiesByLoginIgnoreCase(login.toLowerCase())
                 .map(user -> createSpringSecurityUser(lowerCaseLogin, user))
                 .orElseThrow(() -> new UsernameNotFoundException("User " + login + " wasn't found in the database."));
     }
