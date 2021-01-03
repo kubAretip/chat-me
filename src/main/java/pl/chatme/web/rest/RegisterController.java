@@ -31,7 +31,6 @@ public class RegisterController {
         var user = userService.registerUser(userVM, userVM.getPassword());
 
         var uri = uriComponentsBuilder.path("/users/{id}").buildAndExpand(user.getId());
-
         return ResponseEntity.created(uri.toUri()).body(userMapper.mapToUserDTO(user));
 
     }

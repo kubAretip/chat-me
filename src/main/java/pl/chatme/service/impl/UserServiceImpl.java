@@ -3,14 +3,14 @@ package pl.chatme.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
 import pl.chatme.domain.Authority;
 import pl.chatme.domain.User;
 import pl.chatme.repository.AuthorityRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.security.AuthoritiesConstants;
 import pl.chatme.service.UserService;
-import pl.chatme.service.error.EmailAlreadyTakenException;
-import pl.chatme.service.error.UsernameAlreadyTakenException;
 import pl.chatme.service.dto.UserDTO;
 import pl.chatme.service.mapper.UserMapper;
 
@@ -42,14 +42,22 @@ class UserServiceImpl implements UserService {
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw new UsernameAlreadyTakenException();
+                        throw Problem.builder()
+                                .withStatus(Status.CONFLICT)
+                                .withTitle("Invalid username.")
+                                .withDetail("Username already used.")
+                                .build();
                 });
 
         userRepository.findOneByEmailIgnoreCase(userDTO.getEmail())
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw new EmailAlreadyTakenException();
+                        throw Problem.builder()
+                                .withStatus(Status.CONFLICT)
+                                .withTitle("Invalid email.")
+                                .withDetail("Email is already in use.")
+                                .build();
                 });
 
         var newUser = userMapper.mapToUser(userDTO);

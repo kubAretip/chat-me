@@ -25,7 +25,7 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         var out = response.getWriter();
-        var jsonErrorResponse = objectMapper.writeValueAsString(new AuthenticationFailureVM("invalid_grant", "Invalid user credentials"));
+        var jsonErrorResponse = objectMapper.writeValueAsString(new AuthenticationFailureResponse());
         out.print(jsonErrorResponse);
         out.flush();
     }
