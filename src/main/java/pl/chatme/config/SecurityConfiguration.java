@@ -1,5 +1,6 @@
 package pl.chatme.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,13 +22,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final AuthenticationSuccessHandler authenticationSuccessHandler;
     private final AuthenticationFailureHandler authenticationFailureHandler;
     private final TokenProvider tokenProvider;
+    private final ObjectMapper objectMapper;
 
     public SecurityConfiguration(AuthenticationSuccessHandler authenticationSuccessHandler,
                                  AuthenticationFailureHandler authenticationFailureHandler,
-                                 TokenProvider tokenProvider) {
+                                 TokenProvider tokenProvider,
+                                 ObjectMapper objectMapper) {
         this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.tokenProvider = tokenProvider;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -59,12 +63,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public JWTAuthenticationFilter authenticationFilter() throws Exception {
-        var filter = new JWTAuthenticationFilter();
+        var filter = new JWTAuthenticationFilter(objectMapper);
 
         filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         filter.setAuthenticationFailureHandler(authenticationFailureHandler);
         filter.setAuthenticationManager(authenticationManager());
         filter.setFilterProcessesUrl(AUTHENTICATE_ENDPOINT);
+
 
         return filter;
     }

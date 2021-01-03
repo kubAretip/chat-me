@@ -1,5 +1,6 @@
 package pl.chatme.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -12,8 +13,20 @@ import java.io.IOException;
 @Component
 public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
+    private final ObjectMapper objectMapper;
+
+    public AuthenticationFailureHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        response.getOutputStream().print("Invalid login or password");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        var out = response.getWriter();
+        var jsonErrorResponse = objectMapper.writeValueAsString(new AuthenticationFailureVM("invalid_grant", "Invalid user credentials"));
+        out.print(jsonErrorResponse);
+        out.flush();
     }
 }

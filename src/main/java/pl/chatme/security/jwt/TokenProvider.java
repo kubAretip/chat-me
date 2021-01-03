@@ -74,6 +74,10 @@ public class TokenProvider {
         return null;
     }
 
+    public TokenVM createTokenVMResponse(String token) {
+        return new TokenVM(token, TOKEN_PREFIX.replace(" ", "").toLowerCase());
+    }
+
     public Collection<? extends GrantedAuthority> getAuthoritiesFromDecodedJWT(DecodedJWT decodedToken) {
         return decodedToken
                 .getClaim(AUTHORITIES_KEY)

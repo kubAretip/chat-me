@@ -16,8 +16,6 @@ import java.io.IOException;
 @Slf4j
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-    private final String TOKEN_HEADER = "Authorization";
-    private final String TOKEN_PREFIX = "Bearer";
     private final TokenProvider tokenProvider;
 
     public JWTAuthorizationFilter(AuthenticationManager authenticationManager,
@@ -53,7 +51,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
                 var subject = decodedToken.getSubject();
 
                 if (subject != null) {
-                    User user = new User(subject, "", authorities);
+                    var user = new User(subject, "", authorities);
                     return new UsernamePasswordAuthenticationToken(user, tokenString, authorities);
                 }
             }
