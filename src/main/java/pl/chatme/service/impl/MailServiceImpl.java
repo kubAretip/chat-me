@@ -1,6 +1,7 @@
 package pl.chatme.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -9,6 +10,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import pl.chatme.domain.User;
 import pl.chatme.service.SendMailService;
+import pl.chatme.util.Translator;
 
 import javax.mail.MessagingException;
 import java.nio.charset.StandardCharsets;
@@ -19,11 +21,14 @@ class MailServiceImpl implements SendMailService {
 
     private final JavaMailSender sender;
     private final TemplateEngine templateEngine;
+    private final Translator translator;
 
     public MailServiceImpl(JavaMailSender sender,
-                           TemplateEngine templateEngine) {
+                           TemplateEngine templateEngine,
+                           Translator translator) {
         this.sender = sender;
         this.templateEngine = templateEngine;
+        this.translator = translator;
     }
 
 
@@ -44,24 +49,24 @@ class MailServiceImpl implements SendMailService {
         }
     }
 
-    public void sendMailTemplate(User user, String template, String subjectKey) {
+    public void sendMailTemplate(User user, String template, String subjectCode) {
 
         var userEmail = user.getEmail();
         if (userEmail != null) {
-            log.debug("Sending email template to {}", userEmail);
+            log.debug("Sending email template lang = {} to {}",LocaleContextHolder.getLocale(), userEmail);
 
-            var context = new Context();
+            var subject = translator.translate(subjectCode);
+            var context = new Context(LocaleContextHolder.getLocale());
             context.setVariable("user", user);
-            String content = templateEngine.process(template, context);
-
-            sendEmail(userEmail, subjectKey, content, false, true);
+            var content = templateEngine.process(template, context);
+            sendEmail(userEmail, subject, content, false, true);
         }
     }
 
     @Override
     public void sendActivationEmail(User user) {
         log.debug("Sending activation email to user with id {}", user.getId());
-        sendMailTemplate(user, "mail/activationEmail", "Aktywacja konta");
+        sendMailTemplate(user, "mail/activationEmail", "email.activation.title");
     }
 
 
