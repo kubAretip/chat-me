@@ -1,6 +1,8 @@
 package pl.chatme.service.impl;
 
+import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.zalando.problem.Problem;
@@ -36,7 +38,7 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registerUser(UserDTO userDTO, String password) {
+    public User createUser(UserDTO userDTO, String password) {
 
         userRepository.findOneByLoginIgnoreCase(userDTO.getLogin())
                 .ifPresent(existingUser -> {
@@ -65,10 +67,28 @@ class UserServiceImpl implements UserService {
         var authorities = new HashSet<Authority>();
         authorityRepository.findById(AuthoritiesConstants.USER.getRole()).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
+        newUser.setActivationKey(RandomStringUtils.randomAlphanumeric(124));
         userRepository.save(newUser);
 
         log.debug("Registered new user {}", newUser);
         return newUser;
+    }
+
+    @Override
+    public boolean activateUser(String activationKey) {
+
+        if (Strings.isNullOrEmpty(activationKey))
+            return false;
+
+        return userRepository.findOneByActivationKey(activationKey)
+                .map(user -> {
+                    log.debug("Activation user with id {} with key {}", user.getId(), activationKey);
+                    user.setActivated(true);
+                    user.setActivationKey(null);
+                    userRepository.save(user);
+                    return true;
+                })
+                .orElse(false);
     }
 
     private boolean removeNonActivatedUser(User existingUser) {

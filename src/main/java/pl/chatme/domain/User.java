@@ -1,7 +1,6 @@
 package pl.chatme.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,6 +55,10 @@ public class User implements Serializable {
     @NotNull
     @Column(nullable = false)
     private Boolean activated = false;
+
+    @Size(min = 124, max = 124)
+    @Column(name = "activation_key", length = 124)
+    private String activationKey;
 
     @JsonIgnore
     @ManyToMany

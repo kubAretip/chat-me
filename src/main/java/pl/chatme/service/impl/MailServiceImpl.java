@@ -2,6 +2,7 @@ package pl.chatme.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,13 +23,16 @@ class MailServiceImpl implements SendMailService {
     private final JavaMailSender sender;
     private final TemplateEngine templateEngine;
     private final Translator translator;
+    private final Environment env;
 
     public MailServiceImpl(JavaMailSender sender,
                            TemplateEngine templateEngine,
-                           Translator translator) {
+                           Translator translator,
+                           Environment env) {
         this.sender = sender;
         this.templateEngine = templateEngine;
         this.translator = translator;
+        this.env = env;
     }
 
 
@@ -53,11 +57,14 @@ class MailServiceImpl implements SendMailService {
 
         var userEmail = user.getEmail();
         if (userEmail != null) {
-            log.debug("Sending email template lang = {} to {}",LocaleContextHolder.getLocale(), userEmail);
+            log.debug("Sending email template lang = {} to {}", LocaleContextHolder.getLocale(), userEmail);
 
+            var baseUrl = "http://" + env.getProperty("server.address") + ":" + env.getProperty("server.port") + env.getProperty("server" +
+                    ".servlet.context-path");
             var subject = translator.translate(subjectCode);
             var context = new Context(LocaleContextHolder.getLocale());
             context.setVariable("user", user);
+            context.setVariable("baseUrl", baseUrl);
             var content = templateEngine.process(template, context);
             sendEmail(userEmail, subject, content, false, true);
         }
