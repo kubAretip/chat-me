@@ -6,6 +6,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -35,7 +36,7 @@ class MailServiceImpl implements SendMailService {
         this.env = env;
     }
 
-
+    @Async
     public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         var mimeMessage = this.sender.createMimeMessage();
 
@@ -53,6 +54,7 @@ class MailServiceImpl implements SendMailService {
         }
     }
 
+    @Async
     public void sendMailTemplate(User user, String template, String subjectCode) {
 
         var userEmail = user.getEmail();
@@ -70,6 +72,7 @@ class MailServiceImpl implements SendMailService {
         }
     }
 
+    @Async
     @Override
     public void sendActivationEmail(User user) {
         log.debug("Sending activation email to user with id {}", user.getId());
