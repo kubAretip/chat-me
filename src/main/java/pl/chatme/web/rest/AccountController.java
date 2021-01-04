@@ -1,5 +1,7 @@
 package pl.chatme.web.rest;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -10,6 +12,7 @@ import pl.chatme.service.mapper.UserMapper;
 import pl.chatme.web.rest.vm.UserVM;
 
 import javax.validation.Valid;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/accounts")
@@ -38,7 +41,14 @@ public class AccountController {
 
     }
 
-    @PatchMapping("/activate")
+    // TODO: redirect to frontend
+    /**
+     * {@code GET /activate} : activate the registered user.
+     *
+     * @param activationKey the activation key generated during registration.
+     * @return When activation process is successful redirect to information page else redirect to not found
+     */
+    @GetMapping("/activate")
     public ResponseEntity<Void> activateAccount(@RequestParam("data") String activationKey) {
 
         if (userService.activateUser(activationKey))
