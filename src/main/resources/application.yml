@@ -15,6 +15,18 @@ spring:
     active: dev
   mvc:
     throw-exception-if-no-handler-found: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    password: ${MAIL_PWD}
+    username: ${MAIL}
 logging:
   level:
     pl:
