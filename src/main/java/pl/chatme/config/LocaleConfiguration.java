@@ -9,10 +9,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
+import javax.annotation.PostConstruct;
 import java.util.Locale;
+import java.util.TimeZone;
 
 @Configuration
 public class LocaleConfiguration implements WebMvcConfigurer {
+
+    // Configure time zone to UTC
+    @PostConstruct
+    public void configureZone() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
 
     // Registration interceptor
     @Override
