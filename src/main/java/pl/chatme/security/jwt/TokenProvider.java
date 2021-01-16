@@ -7,6 +7,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,20 +15,20 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.error.MissingEnvironmentVariableException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static pl.chatme.config.Constants.TOKEN_PREFIX;
+
 @Slf4j
 @Component
 public class TokenProvider {
 
     private static final String AUTHORITIES_KEY = "roles";
-    private static final String TOKEN_HEADER = "Authorization";
-    private static final String TOKEN_PREFIX = "Bearer ";
+
     private final long tokenValidityInMilliseconds;
     private final Algorithm jwtAlgorithm;
 
@@ -87,20 +88,38 @@ public class TokenProvider {
                 .collect(Collectors.toList());
     }
 
+    // Reads the JWT from the authorization header and validate the token
+    public UsernamePasswordAuthenticationToken getAuthentication(String tokenString) {
+        log.debug("Getting authentication from token {}", tokenString);
+        if (tokenString != null) {
 
-    private Boolean isValidTokenRequestHeader(String authorizationHeader) {
-        return !Strings.isNullOrEmpty(authorizationHeader) && authorizationHeader.startsWith(TOKEN_PREFIX);
-    }
+            var decodedToken = decodeToken(tokenString);
 
-    public String extractTokenStringFromRequest(HttpServletRequest request) {
+            if (decodedToken != null) {
+                var authorities = getAuthoritiesFromDecodedJWT(decodedToken);
+                var subject = decodedToken.getSubject();
 
-        var authorizationHeader = request.getHeader(TOKEN_HEADER);
-
-        if (isValidTokenRequestHeader(authorizationHeader)) {
-            return authorizationHeader.replace(TOKEN_PREFIX, "");
+                if (subject != null) {
+                    var user = new User(subject, "", authorities);
+                    return new UsernamePasswordAuthenticationToken(user, tokenString, authorities);
+                }
+            }
         }
         return null;
     }
+
+    public Boolean isValidTokenRequestHeader(String authorizationHeader) {
+        return !Strings.isNullOrEmpty(authorizationHeader) && authorizationHeader.startsWith(TOKEN_PREFIX);
+    }
+
+    public String extractToken(String authHeaderValue) {
+
+        if (isValidTokenRequestHeader(authHeaderValue)) {
+            return authHeaderValue.replace(TOKEN_PREFIX, "");
+        } else
+            throw new RuntimeException("Value of authorization header is empty or not contains Bearer prefix.");
+    }
+
 
     private List<String> convertUserAuthorityToStringList(User user) {
         return user.getAuthorities().stream()

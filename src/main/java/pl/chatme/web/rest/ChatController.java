@@ -5,17 +5,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pl.chatme.domain.ChatMessage;
 import pl.chatme.service.ChatMessageService;
 import pl.chatme.service.ConversationService;
-import pl.chatme.service.dto.ChatMessageDTO;
 import pl.chatme.web.rest.vm.MessageVM;
 import pl.chatme.web.rest.vm.SimpleMessageVM;
 
-import java.util.List;
+import java.security.Principal;
 
 @Slf4j
 @RestController
@@ -41,7 +37,8 @@ public class ChatController {
      * @param messageVM
      */
     @MessageMapping("/chat")
-    public ResponseEntity<String> processMessage(@Payload MessageVM messageVM) {
+    public ResponseEntity<String> processMessage(@Payload MessageVM messageVM, Principal principal) {
+        log.debug("Principal {}", principal.getName());
         conversationService.getConversation(messageVM.getSenderId(), messageVM.getRecipientId())
                 .ifPresent(conversation -> {
 
