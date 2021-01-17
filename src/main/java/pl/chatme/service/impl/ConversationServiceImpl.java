@@ -7,8 +7,6 @@ import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationService;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,7 +38,6 @@ class ConversationServiceImpl implements ConversationService {
 
         return Optional.empty();
     }
-
 
 
 }

@@ -70,9 +70,8 @@ public class TokenProvider {
                     .build()
                     .verify(token);
         } catch (JWTDecodeException exception) {
-            exception.printStackTrace();
+            throw new RuntimeException(exception.getLocalizedMessage());
         }
-        return null;
     }
 
     public TokenVM createTokenVMResponse(String token) {
@@ -113,11 +112,10 @@ public class TokenProvider {
     }
 
     public String extractToken(String authHeaderValue) {
-
         if (isValidTokenRequestHeader(authHeaderValue)) {
             return authHeaderValue.replace(TOKEN_PREFIX, "");
         } else
-            throw new RuntimeException("Value of authorization header is empty or not contains Bearer prefix.");
+            throw new RuntimeException("Value of authorization header is empty or not contains '" + TOKEN_PREFIX + "' prefix.");
     }
 
 

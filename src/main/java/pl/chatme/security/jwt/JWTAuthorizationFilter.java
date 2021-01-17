@@ -28,17 +28,16 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 
         var authorizationHeaderValue = request.getHeader(TOKEN_HEADER);
+
         try {
             var token = tokenProvider.extractToken(authorizationHeaderValue);
 
-            if (token != null) {
-                var authenticationToken = tokenProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
-        } catch (RuntimeException ex) {
-            log.debug(ex.getLocalizedMessage());
-        }
+            var authenticationToken = tokenProvider.getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
+        } catch (RuntimeException exception) {
+            log.debug(exception.getLocalizedMessage());
+        }
         chain.doFilter(request, response);
     }
 }

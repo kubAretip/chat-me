@@ -4,8 +4,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 
-import java.util.Locale;
-
 @Component
 public class Translator {
 

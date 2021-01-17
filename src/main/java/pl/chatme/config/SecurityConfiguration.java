@@ -10,9 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 import pl.chatme.security.AuthenticationFailureHandler;
 import pl.chatme.security.AuthenticationSuccessHandler;
@@ -48,6 +45,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // @formatter:off
 
         http
+            .cors()
+        .and()
             .csrf()
             .disable()
             .sessionManagement()
@@ -58,13 +57,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .mvcMatchers(HttpMethod.POST,"/accounts/register").permitAll()
             .mvcMatchers(HttpMethod.GET,"/accounts/activate").permitAll()
             .mvcMatchers("/ws").permitAll()
-            .mvcMatchers("/messages").permitAll()       // todo : change this after implement security for websockets
             .anyRequest().authenticated()
         .and()
             .httpBasic()
         .and()
             .addFilter(authenticationFilter())
-            .addFilter(new JWTAuthorizationFilter(authenticationManager(),tokenProvider))
+            .addFilter(authorizationFilter())
             .exceptionHandling()
             .authenticationEntryPoint(problemSupport)
             .accessDeniedHandler(problemSupport);
@@ -87,5 +85,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         filter.setFilterProcessesUrl(AUTHENTICATE_ENDPOINT);
 
         return filter;
+    }
+
+    @Bean
+    public JWTAuthorizationFilter authorizationFilter() throws Exception {
+        return new JWTAuthorizationFilter(authenticationManager(), tokenProvider);
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import pl.chatme.repository.UserRepository;
+import pl.chatme.security.exception.UserNotActivatedException;
 
 import javax.transaction.Transactional;
 import java.util.stream.Collectors;

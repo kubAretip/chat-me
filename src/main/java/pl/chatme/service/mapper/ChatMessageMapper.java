@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import pl.chatme.domain.ChatMessage;
 import pl.chatme.service.dto.ChatMessageDTO;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;

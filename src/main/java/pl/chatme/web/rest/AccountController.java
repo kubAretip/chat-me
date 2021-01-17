@@ -1,7 +1,5 @@
 package pl.chatme.web.rest;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -12,7 +10,6 @@ import pl.chatme.service.mapper.UserMapper;
 import pl.chatme.web.rest.vm.UserVM;
 
 import javax.validation.Valid;
-import java.net.URI;
 
 @RestController
 @RequestMapping("/accounts")
@@ -42,6 +39,7 @@ public class AccountController {
     }
 
     // TODO: redirect to frontend
+
     /**
      * {@code GET /activate} : activate the registered user.
      *
