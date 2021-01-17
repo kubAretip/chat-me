@@ -2,7 +2,7 @@ package pl.chatme.service;
 
 import pl.chatme.domain.ConversationMessage;
 import pl.chatme.domain.Conversation;
-import pl.chatme.service.dto.ConversationMessageDTO;
+import pl.chatme.dto.ConversationMessageDTO;
 
 import java.util.List;
 

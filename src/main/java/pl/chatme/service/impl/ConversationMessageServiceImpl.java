@@ -5,13 +5,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.ConversationMessage;
 import pl.chatme.domain.Conversation;
-import pl.chatme.domain.MessageStatus;
+import pl.chatme.domain.enumerated.MessageStatus;
 import pl.chatme.repository.ConversationMessageRepository;
 import pl.chatme.repository.ConversationRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationMessageService;
-import pl.chatme.service.dto.ConversationMessageDTO;
-import pl.chatme.service.mapper.ConversationMessageMapper;
+import pl.chatme.dto.ConversationMessageDTO;
+import pl.chatme.dto.mapper.ConversationMessageMapper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

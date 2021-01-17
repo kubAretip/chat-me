@@ -7,14 +7,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.Authority;
 import pl.chatme.domain.User;
+import pl.chatme.dto.UserDTO;
+import pl.chatme.dto.mapper.UserMapper;
 import pl.chatme.repository.AuthorityRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.security.AuthoritiesConstants;
 import pl.chatme.service.UserService;
-import pl.chatme.service.dto.UserDTO;
-import pl.chatme.service.exception.UserAlreadyExistsException;
-import pl.chatme.service.exception.UserNotFoundException;
-import pl.chatme.service.mapper.UserMapper;
+import pl.chatme.service.exception.AlreadyExistsException;
+import pl.chatme.service.exception.NotFoundException;
 
 import java.util.HashSet;
 
@@ -44,14 +44,14 @@ class UserServiceImpl implements UserService {
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw new UserAlreadyExistsException("Login already used.");
+                        throw new AlreadyExistsException("Incorrect login.", "Login already used.");
                 });
 
         userRepository.findOneByEmailIgnoreCase(userDTO.getEmail())
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw new UserAlreadyExistsException("Email is already in use.");
+                        throw new AlreadyExistsException("Incorrect email.", "Email is already in use.");
                 });
 
         var newUser = userMapper.mapToUser(userDTO);
@@ -92,7 +92,7 @@ class UserServiceImpl implements UserService {
                     user.setFriendRequestCode(generateFriendRequestCode(user.getLogin()));
                     return userRepository.save(user);
                 })
-                .orElseThrow(() -> new UserNotFoundException("User with login = " + login + " not exists."));
+                .orElseThrow(() -> new NotFoundException("User not found", "User with login = " + login + " not exists."));
     }
 
     private boolean removeNonActivatedUser(User existingUser) {

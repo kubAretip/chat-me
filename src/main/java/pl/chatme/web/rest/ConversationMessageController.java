@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.chatme.service.ConversationMessageService;
-import pl.chatme.service.dto.ConversationMessageDTO;
+import pl.chatme.dto.ConversationMessageDTO;
 
 import java.security.Principal;
 import java.util.List;

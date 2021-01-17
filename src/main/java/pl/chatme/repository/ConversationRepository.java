@@ -10,4 +10,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     Optional<Conversation> findBySenderAndRecipient(User sender, User recipient);
 
+    boolean existsBySenderAndRecipient(User sender, User recipient);
+
 }

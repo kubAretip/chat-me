@@ -3,7 +3,7 @@ package pl.chatme.web.rest.vm;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pl.chatme.service.dto.UserDTO;
+import pl.chatme.dto.UserDTO;
 
 import javax.validation.constraints.Size;
 

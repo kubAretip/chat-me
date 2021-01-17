@@ -1,8 +1,8 @@
-package pl.chatme.service.mapper;
+package pl.chatme.dto.mapper;
 
 import org.mapstruct.Mapper;
 import pl.chatme.domain.User;
-import pl.chatme.service.dto.UserDTO;
+import pl.chatme.dto.UserDTO;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {

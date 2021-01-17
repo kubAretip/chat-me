@@ -5,12 +5,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
+import pl.chatme.dto.UserDTO;
+import pl.chatme.dto.mapper.UserMapper;
+import pl.chatme.service.exception.AlreadyExistsException;
+import pl.chatme.service.exception.NotFoundException;
 import pl.chatme.service.SendMailService;
 import pl.chatme.service.UserService;
-import pl.chatme.service.dto.UserDTO;
-import pl.chatme.service.exception.UserAlreadyExistsException;
-import pl.chatme.service.exception.UserNotFoundException;
-import pl.chatme.service.mapper.UserMapper;
 import pl.chatme.web.rest.vm.UserVM;
 
 import javax.validation.Valid;
@@ -40,10 +40,10 @@ public class AccountController {
             var uri = uriComponentsBuilder.path("/users/{id}").buildAndExpand(user.getId());
             sendMailService.sendActivationEmail(user);
             return ResponseEntity.created(uri.toUri()).body(userMapper.mapToUserDTO(user));
-        } catch (UserAlreadyExistsException ex) {
+        } catch (AlreadyExistsException ex) {
             throw Problem.builder()
                     .withStatus(Status.CONFLICT)
-                    .withTitle("Incorrect user data.")
+                    .withTitle(ex.getTitle())
                     .withDetail(ex.getLocalizedMessage())
                     .build();
         }
@@ -70,10 +70,10 @@ public class AccountController {
     public ResponseEntity<UserDTO> renewFriendRequestCode(Principal principal) {
         try {
             return ResponseEntity.ok(userMapper.mapToUserDTO(userService.renewFriendRequestCode(principal.getName())));
-        } catch (UserNotFoundException exception) {
+        } catch (NotFoundException exception) {
             throw Problem.builder()
                     .withStatus(Status.NOT_FOUND)
-                    .withTitle("User not found")
+                    .withTitle(exception.getTitle())
                     .withDetail(exception.getLocalizedMessage())
                     .build();
         }

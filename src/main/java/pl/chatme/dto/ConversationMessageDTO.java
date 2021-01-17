@@ -1,4 +1,4 @@
-package pl.chatme.service.dto;
+package pl.chatme.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

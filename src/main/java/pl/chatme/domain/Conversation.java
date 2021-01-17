@@ -23,7 +23,7 @@ public class Conversation {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conversation_with_id", nullable = false)
+    @JoinColumn(name = "conversation_with_id")
     private Conversation conversationWith;
 
     @ManyToOne(fetch = FetchType.LAZY)

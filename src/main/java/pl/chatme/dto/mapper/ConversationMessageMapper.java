@@ -1,9 +1,9 @@
-package pl.chatme.service.mapper;
+package pl.chatme.dto.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import pl.chatme.domain.ConversationMessage;
-import pl.chatme.service.dto.ConversationMessageDTO;
+import pl.chatme.dto.ConversationMessageDTO;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;

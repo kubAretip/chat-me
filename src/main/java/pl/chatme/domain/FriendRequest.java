@@ -3,28 +3,23 @@ package pl.chatme.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pl.chatme.domain.enumerated.MessageStatus;
+import pl.chatme.domain.enumerated.FriendRequestStatus;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 
-/**
- * A message.
- */
+
+@Entity
+@Table(name = "friend_request",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_sender_id", "user_recipient_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
-@Entity
-@Table(name = "conversation_message")
-public class ConversationMessage {
+public class FriendRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conversation_id", nullable = false)
-    private Conversation conversation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_sender_id", nullable = false)
@@ -34,12 +29,11 @@ public class ConversationMessage {
     @JoinColumn(name = "user_recipient_id", nullable = false)
     private User recipient;
 
-    private String content;
+    @Column(name = "sent_time", nullable = false)
+    public OffsetDateTime sentTime;
 
-    @Column(nullable = false)
-    private OffsetDateTime time;
-
+    @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "message_status")
-    private MessageStatus messageStatus;
+    private FriendRequestStatus status;
+
 }

@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS conversation
     id                   BIGINT NOT NULL auto_increment,
     user_sender_id       BIGINT NOT NULL,
     user_recipient_id    BIGINT NOT NULL,
-    conversation_with_id BIGINT NOT NULL,
+    conversation_with_id BIGINT,
     CONSTRAINT `conversation_conversation_with_fk` FOREIGN KEY (`conversation_with_id`) REFERENCES `conversation` (`id`)
         ON DELETE NO ACTION
         ON UPDATE NO ACTION,
