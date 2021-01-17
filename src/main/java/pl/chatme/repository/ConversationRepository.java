@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import pl.chatme.domain.Conversation;
 import pl.chatme.domain.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
@@ -12,4 +13,5 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     boolean existsBySenderAndRecipient(User sender, User recipient);
 
+    List<Conversation> findBySender(User sender);
 }

@@ -7,8 +7,10 @@ import pl.chatme.repository.ConversationRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationService;
 import pl.chatme.service.exception.AlreadyExistsException;
+import pl.chatme.service.exception.NotFoundException;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -68,7 +70,14 @@ class ConversationServiceImpl implements ConversationService {
         } else {
             throw new AlreadyExistsException("Something gone wrong.", "Conversation for users already exists.");
         }
-
-
     }
+
+    @Override
+    public List<Conversation> getSenderConversation(String username) {
+        return userRepository.findOneByLoginIgnoreCase(username)
+                .map(conversationRepository::findBySender)
+                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
+    }
+
+
 }
