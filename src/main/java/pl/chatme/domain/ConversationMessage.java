@@ -14,8 +14,8 @@ import java.time.OffsetDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "chat_message")
-public class ChatMessage {
+@Table(name = "conversation_message")
+public class ConversationMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

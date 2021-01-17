@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS chat_message
+CREATE TABLE IF NOT EXISTS conversation_message
 (
     id                BIGINT       NOT NULL auto_increment,
     user_sender_id    BIGINT       NOT NULL,

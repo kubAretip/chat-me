@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class ChatMessageDTO {
+public class ConversationMessageDTO {
 
     private Long id;
     private UserDTO sender;

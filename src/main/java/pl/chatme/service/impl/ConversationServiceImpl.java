@@ -24,9 +24,9 @@ class ConversationServiceImpl implements ConversationService {
     //TODO add exceptions
     @Transactional
     @Override
-    public Optional<Conversation> getConversation(long senderUserId, long recipientUserId) {
+    public Optional<Conversation> getConversation(String senderUsername, long recipientUserId) {
 
-        var senderUserOptional = userRepository.findById(senderUserId);
+        var senderUserOptional = userRepository.findOneByLoginIgnoreCase(senderUsername);
         var recipientUserOptional = userRepository.findById(recipientUserId);
 
         if (senderUserOptional.isPresent() && recipientUserOptional.isPresent()) {

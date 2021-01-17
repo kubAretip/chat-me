@@ -10,6 +10,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 import pl.chatme.security.AuthenticationFailureHandler;
 import pl.chatme.security.AuthenticationSuccessHandler;
@@ -91,4 +94,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public JWTAuthorizationFilter authorizationFilter() throws Exception {
         return new JWTAuthorizationFilter(authenticationManager(), tokenProvider);
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        return source;
+    }
+
 }

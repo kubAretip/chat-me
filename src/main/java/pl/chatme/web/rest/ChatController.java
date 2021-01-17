@@ -6,7 +6,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
-import pl.chatme.service.ChatMessageService;
+import pl.chatme.service.ConversationMessageService;
 import pl.chatme.service.ConversationService;
 import pl.chatme.web.rest.vm.MessageVM;
 import pl.chatme.web.rest.vm.SimpleMessageVM;
@@ -19,15 +19,15 @@ public class ChatController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ConversationService conversationService;
-    private final ChatMessageService chatMessageService;
+    private final ConversationMessageService conversationMessageService;
 
     public ChatController(SimpMessagingTemplate simpMessagingTemplate,
                           ConversationService conversationService,
-                          ChatMessageService chatMessageService) {
+                          ConversationMessageService conversationMessageService) {
 
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.conversationService = conversationService;
-        this.chatMessageService = chatMessageService;
+        this.conversationMessageService = conversationMessageService;
     }
 
     /**
@@ -38,11 +38,10 @@ public class ChatController {
      */
     @MessageMapping("/chat")
     public ResponseEntity<String> processMessage(@Payload MessageVM messageVM, Principal principal) {
-        log.debug("Principal {}", principal.getName());
-        conversationService.getConversation(messageVM.getSenderId(), messageVM.getRecipientId())
-                .ifPresent(conversation -> {
 
-                    chatMessageService.saveChatMessage(conversation, messageVM.getContent(), messageVM.getTime());
+        conversationService.getConversation(principal.getName(), messageVM.getRecipientId())
+                .ifPresent(conversation -> {
+                    conversationMessageService.saveConversationMessage(conversation, messageVM.getContent(), messageVM.getTime());
                     simpMessagingTemplate.convertAndSendToUser(conversation.getRecipient().getId().toString(),
                             "/queue/messages", new SimpleMessageVM(conversation.getSender().getLogin(), messageVM.getContent()));
                 });

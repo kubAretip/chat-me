@@ -11,7 +11,6 @@ import lombok.ToString;
 @ToString
 public class MessageVM {
 
-    private Long senderId;
     private Long recipientId;
     private String content;
     private String time;
