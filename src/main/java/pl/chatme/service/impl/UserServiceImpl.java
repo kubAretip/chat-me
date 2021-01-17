@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.zalando.problem.Problem;
-import org.zalando.problem.Status;
 import pl.chatme.domain.Authority;
 import pl.chatme.domain.User;
 import pl.chatme.repository.AuthorityRepository;
@@ -14,6 +12,8 @@ import pl.chatme.repository.UserRepository;
 import pl.chatme.security.AuthoritiesConstants;
 import pl.chatme.service.UserService;
 import pl.chatme.service.dto.UserDTO;
+import pl.chatme.service.exception.UserAlreadyExistsException;
+import pl.chatme.service.exception.UserNotFoundException;
 import pl.chatme.service.mapper.UserMapper;
 
 import java.util.HashSet;
@@ -44,22 +44,14 @@ class UserServiceImpl implements UserService {
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw Problem.builder()
-                                .withStatus(Status.CONFLICT)
-                                .withTitle("Invalid username.")
-                                .withDetail("Username already used.")
-                                .build();
+                        throw new UserAlreadyExistsException("Login already used.");
                 });
 
         userRepository.findOneByEmailIgnoreCase(userDTO.getEmail())
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw Problem.builder()
-                                .withStatus(Status.CONFLICT)
-                                .withTitle("Invalid email.")
-                                .withDetail("Email is already in use.")
-                                .build();
+                        throw new UserAlreadyExistsException("Email is already in use.");
                 });
 
         var newUser = userMapper.mapToUser(userDTO);
@@ -68,6 +60,7 @@ class UserServiceImpl implements UserService {
         authorityRepository.findById(AuthoritiesConstants.USER.getRole()).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
         newUser.setActivationKey(RandomStringUtils.randomAlphanumeric(124));
+        newUser.setFriendRequestCode(newUser.getLogin().toLowerCase() + RandomStringUtils.randomNumeric(9));
         userRepository.save(newUser);
 
         log.debug("Registered new user {}", newUser);
@@ -91,6 +84,17 @@ class UserServiceImpl implements UserService {
                 .orElse(false);
     }
 
+
+    @Override
+    public User renewFriendRequestCode(String login) {
+        return userRepository.findOneByLoginIgnoreCase(login)
+                .map(user -> {
+                    user.setFriendRequestCode(generateFriendRequestCode(user.getLogin()));
+                    return userRepository.save(user);
+                })
+                .orElseThrow(() -> new UserNotFoundException("User with login = " + login + " not exists."));
+    }
+
     private boolean removeNonActivatedUser(User existingUser) {
         if (existingUser.getActivated()) {
             return false;
@@ -98,6 +102,10 @@ class UserServiceImpl implements UserService {
             userRepository.delete(existingUser);
             return true;
         }
+    }
+
+    private String generateFriendRequestCode(String login) {
+        return login.toLowerCase() + "-" + RandomStringUtils.randomNumeric(10);
     }
 
 }

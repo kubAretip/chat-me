@@ -7,4 +7,6 @@ public interface UserService {
     User createUser(UserDTO userDTO, String password);
 
     boolean activateUser(String activationKey);
+
+    User renewFriendRequestCode(String username);
 }

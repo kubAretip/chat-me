@@ -36,4 +36,5 @@ public class UserDTO {
     @NotNull
     private Boolean activated = false;
 
+    private String friendRequestCode;
 }

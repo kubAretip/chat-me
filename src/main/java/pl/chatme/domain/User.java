@@ -60,6 +60,10 @@ public class User implements Serializable {
     @Column(name = "activation_key", length = 124)
     private String activationKey;
 
+    @Size(min = 5, max = 64)
+    @Column(name = "friend_request_code", nullable = false, length = 64, unique = true)
+    private String friendRequestCode;
+
     @JsonIgnore
     @ManyToMany
     @JoinTable(
@@ -73,7 +77,6 @@ public class User implements Serializable {
     public void setEmail(String email) {
         this.email = email.toLowerCase();
     }
-
 
     @Override
     public String toString() {
