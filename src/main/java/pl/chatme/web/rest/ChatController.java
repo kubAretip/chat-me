@@ -24,7 +24,6 @@ public class ChatController {
     public ChatController(SimpMessagingTemplate simpMessagingTemplate,
                           ConversationService conversationService,
                           ConversationMessageService conversationMessageService) {
-
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.conversationService = conversationService;
         this.conversationMessageService = conversationMessageService;
@@ -32,7 +31,10 @@ public class ChatController {
 
     /**
      * To send message use url /app/chat and add MessageVM body.
-     * In front end part to subscribe message use url /user/{senderId}/queue/messages
+     * In front end part to subscribe message use url /user/{conversationId}/queue/messages
+     * Be careful what conversation you subscribe.
+     * You must subscribe conversation with id where logged user id = user_sender_id in conversation table.
+     * With this you will able to getting message only from recipient_id in this subscription.
      *
      * @param messageVM
      */
@@ -42,8 +44,9 @@ public class ChatController {
         conversationService.getConversation(principal.getName(), messageVM.getRecipientId())
                 .ifPresent(conversation -> {
                     conversationMessageService.saveConversationMessage(conversation, messageVM.getContent(), messageVM.getTime());
-                    simpMessagingTemplate.convertAndSendToUser(conversation.getRecipient().getId().toString(),
-                            "/queue/messages", new SimpleMessageVM(conversation.getSender().getLogin(), messageVM.getContent()));
+                    simpMessagingTemplate.convertAndSendToUser(conversation.getConversationWith().getId().toString(),
+                            "/queue/messages",
+                            new SimpleMessageVM(conversation.getSender().getLogin(), messageVM.getContent()));
                 });
         return ResponseEntity.ok("CONNECTED");
     }
