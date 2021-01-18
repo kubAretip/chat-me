@@ -2,17 +2,15 @@ package pl.chatme.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import pl.chatme.domain.User;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.security.exception.UserNotActivatedException;
 
 import javax.transaction.Transactional;
-import java.util.stream.Collectors;
 
 /**
  * Authenticate a user from the database.
@@ -47,19 +45,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User " + login + " wasn't found in the database."));
     }
 
-    private User createSpringSecurityUser(String lowerCaseLogin, pl.chatme.domain.User user) {
+    @Transactional
+    public SecurityUserDetails createSpringSecurityUser(String lowerCaseLogin, User user) {
 
         if (!user.getActivated()) {
             throw new UserNotActivatedException("User " + lowerCaseLogin + " wasn't activated.");
         }
 
-        var authorities = user
-                .getAuthorities()
-                .stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getName()))
-                .collect(Collectors.toList());
-
-        return new User(user.getLogin(), user.getPassword(), authorities);
+        return new SecurityUserDetails(user);
 
     }
 

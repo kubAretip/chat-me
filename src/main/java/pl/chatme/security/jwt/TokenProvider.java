@@ -11,9 +11,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.error.MissingEnvironmentVariableException;
+import pl.chatme.security.SecurityUserDetails;
 
 import java.util.Base64;
 import java.util.Collection;
@@ -28,7 +28,8 @@ import static pl.chatme.config.Constants.TOKEN_PREFIX;
 public class TokenProvider {
 
     private static final String AUTHORITIES_KEY = "roles";
-
+    private static final String SUB_ID_KEY = "subId";
+    private static final String TOKEN_TYPE_KEY = "typ";
     private final long tokenValidityInMilliseconds;
     private final Algorithm jwtAlgorithm;
 
@@ -51,7 +52,7 @@ public class TokenProvider {
 
     public String createToken(Authentication authentication) {
 
-        var user = (User) authentication.getPrincipal();
+        var user = (SecurityUserDetails) authentication.getPrincipal();
         var authorities = convertUserAuthorityToStringList(user);
 
         var expiresAt = new Date(System.currentTimeMillis() + this.tokenValidityInMilliseconds);
@@ -59,7 +60,9 @@ public class TokenProvider {
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(expiresAt)
+                .withClaim(SUB_ID_KEY, user.getUserId())
                 .withClaim(AUTHORITIES_KEY, authorities)
+                .withClaim(TOKEN_TYPE_KEY, TOKEN_PREFIX.replace(" ", ""))
                 .sign(jwtAlgorithm);
     }
 
@@ -97,9 +100,10 @@ public class TokenProvider {
             if (decodedToken != null) {
                 var authorities = getAuthoritiesFromDecodedJWT(decodedToken);
                 var subject = decodedToken.getSubject();
+                var subjectId = decodedToken.getClaim(SUB_ID_KEY).asLong();
 
                 if (subject != null) {
-                    var user = new User(subject, "", authorities);
+                    var user = new SecurityUserDetails(subjectId, subject, "", authorities);
                     return new UsernamePasswordAuthenticationToken(user, tokenString, authorities);
                 }
             }
@@ -119,7 +123,7 @@ public class TokenProvider {
     }
 
 
-    private List<String> convertUserAuthorityToStringList(User user) {
+    private List<String> convertUserAuthorityToStringList(SecurityUserDetails user) {
         return user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
