@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pl.chatme.service.ConversationMessageService;
 import pl.chatme.dto.ConversationMessageDTO;
+import pl.chatme.service.ConversationMessageService;
 
 import java.security.Principal;
 import java.util.List;
@@ -21,12 +21,13 @@ public class ConversationMessageController {
         this.conversationMessageService = conversationMessageService;
     }
 
-    @GetMapping(params = {"recipient_user_id", "size"})
-    public ResponseEntity<List<ConversationMessageDTO>> getMessageWithSize(@RequestParam("recipient_user_id") long recipientId,
+    @GetMapping(params = {"conversation_id", "size"})
+    public ResponseEntity<List<ConversationMessageDTO>> getMessageWithSize(@RequestParam("conversation_id") long conversationId,
                                                                            @RequestParam("size") int size,
                                                                            Principal principal) {
-        return ResponseEntity.ok(conversationMessageService.getMessagesWithSize(principal.getName(), recipientId, size));
+        return ResponseEntity.ok(conversationMessageService.getMessagesWithSize(principal.getName(), conversationId, size));
     }
+
 
     @GetMapping(params = {"recipient_user_id", "size", "before_time"})
     public ResponseEntity<List<ConversationMessageDTO>> getOneToOneConversation(@RequestParam("recipient_user_id") long secondUserId,

@@ -3,15 +3,16 @@ package pl.chatme.service.impl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import pl.chatme.domain.ConversationMessage;
 import pl.chatme.domain.Conversation;
+import pl.chatme.domain.ConversationMessage;
 import pl.chatme.domain.enumerated.MessageStatus;
+import pl.chatme.dto.ConversationMessageDTO;
+import pl.chatme.dto.mapper.ConversationMessageMapper;
 import pl.chatme.repository.ConversationMessageRepository;
 import pl.chatme.repository.ConversationRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationMessageService;
-import pl.chatme.dto.ConversationMessageDTO;
-import pl.chatme.dto.mapper.ConversationMessageMapper;
+import pl.chatme.service.exception.NotFoundException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -90,35 +91,24 @@ class ConversationMessageServiceImpl implements ConversationMessageService {
     }
 
     @Override
-    public List<ConversationMessageDTO> getMessagesWithSize(String senderUsername, long recipientId, int size) {
+    public List<ConversationMessageDTO> getMessagesWithSize(String senderUsername, long conversationId, int size) {
 
-        var senderUserOptional = userRepository.findOneByLoginIgnoreCase(senderUsername);
-        var recipientUserOptional = userRepository.findById(recipientId);
+        var user = userRepository.findOneByLoginIgnoreCase(senderUsername)
+                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + senderUsername + " not exists."));
 
-        if (senderUserOptional.isPresent() && recipientUserOptional.isPresent()) {
-
-            var sender = senderUserOptional.get();
-            var recipient = recipientUserOptional.get();
-            var senderConversationOptional = conversationRepository.findBySenderAndRecipient(sender, recipient);
-            var recipientConversationOptional = conversationRepository.findBySenderAndRecipient(recipient, sender);
-
-            if (senderConversationOptional.isPresent() && recipientConversationOptional.isPresent()) {
-
-                var sortedByTimeDescWithSize = PageRequest.of(0, size, Sort.by("time").descending());
-                var conversationMessages = conversationMessageRepository.findByConversationOrConversation(senderConversationOptional.get(),
-                        recipientConversationOptional.get(), sortedByTimeDescWithSize);
-
-                conversationMessages.sort((Comparator.comparing(ConversationMessage::getTime)));
-
-                return conversationMessages
-                        .stream()
-                        .map(conversationMessageMapper::mapToConversationMessageDTO)
-                        .collect(Collectors.toList());
-            }
-        }
-
-        // TODO : throw exception
-        return Collections.emptyList();
+        return conversationRepository.findById(conversationId)
+                .filter(conversation -> conversation.getSender().equals(user))
+                .map(senderConversation -> {
+                    var sortedByTimeDescWithSize = PageRequest.of(0, size, Sort.by("time").descending());
+                    var conversationMessages = conversationMessageRepository.findByConversationOrConversation(senderConversation,
+                            senderConversation.getConversationWith(), sortedByTimeDescWithSize);
+                    conversationMessages.sort((Comparator.comparing(ConversationMessage::getTime)));
+                    return conversationMessages
+                            .stream()
+                            .map(conversationMessageMapper::mapToConversationMessageDTO)
+                            .collect(Collectors.toList());
+                })
+                .orElseThrow(() -> new NotFoundException("Conversation not found", "We can not find this conversation."));
     }
 
 }

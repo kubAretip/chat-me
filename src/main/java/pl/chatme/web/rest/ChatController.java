@@ -6,10 +6,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
+import pl.chatme.dto.ConversationMessageDTO;
+import pl.chatme.dto.mapper.ConversationMessageMapper;
 import pl.chatme.service.ConversationMessageService;
 import pl.chatme.service.ConversationService;
-import pl.chatme.web.rest.vm.MessageVM;
-import pl.chatme.web.rest.vm.SimpleMessageVM;
 
 import java.security.Principal;
 
@@ -20,33 +20,27 @@ public class ChatController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ConversationService conversationService;
     private final ConversationMessageService conversationMessageService;
+    private final ConversationMessageMapper conversationMessageMapper;
 
     public ChatController(SimpMessagingTemplate simpMessagingTemplate,
                           ConversationService conversationService,
-                          ConversationMessageService conversationMessageService) {
+                          ConversationMessageService conversationMessageService,
+                          ConversationMessageMapper conversationMessageMapper) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.conversationService = conversationService;
         this.conversationMessageService = conversationMessageService;
+        this.conversationMessageMapper = conversationMessageMapper;
     }
 
-    /**
-     * To send message use url /app/chat and add MessageVM body.
-     * In front end part to subscribe message use url /user/{conversationId}/queue/messages
-     * Be careful what conversation you subscribe.
-     * You must subscribe conversation with id where logged user id = user_sender_id in conversation table.
-     * With this you will able to getting message only from recipient_id in this subscription.
-     *
-     * @param messageVM
-     */
-    @MessageMapping("/chat")
-    public ResponseEntity<String> processMessage(@Payload MessageVM messageVM, Principal principal) {
 
-        conversationService.getConversation(principal.getName(), messageVM.getRecipientId())
+    @MessageMapping("/chat")
+    public ResponseEntity<String> processMessage(@Payload ConversationMessageDTO message, Principal principal) {
+
+        conversationService.getConversation(principal.getName(), message.getRecipient().getId())
                 .ifPresent(conversation -> {
-                    conversationMessageService.saveConversationMessage(conversation, messageVM.getContent(), messageVM.getTime());
-                    simpMessagingTemplate.convertAndSendToUser(conversation.getConversationWith().getId().toString(),
-                            "/queue/messages",
-                            new SimpleMessageVM(conversation.getSender().getLogin(), messageVM.getContent()));
+                    var conversationMessage = conversationMessageService.saveConversationMessage(conversation, message.getContent(), message.getTime());
+                    simpMessagingTemplate.convertAndSendToUser(conversationMessage.getRecipient().getId().toString(),
+                            "/queue/messages", conversationMessageMapper.mapToConversationMessageDTO(conversationMessage));
                 });
         return ResponseEntity.ok("CONNECTED");
     }

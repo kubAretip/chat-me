@@ -10,6 +10,7 @@ import lombok.Setter;
 public class ConversationMessageDTO {
 
     private Long id;
+    private Long conversationId;
     private UserDTO sender;
     private UserDTO recipient;
     private String content;
