@@ -20,7 +20,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,7 +47,6 @@ class ConversationMessageServiceImpl implements ConversationMessageService {
 
         var newMessage = new ConversationMessage();
 
-        // TODO : catch some exception in parse error case
         try {
             newMessage.setTime(new SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
                     .parse(time)
@@ -68,26 +66,26 @@ class ConversationMessageServiceImpl implements ConversationMessageService {
 
 
     @Override
-    public List<ConversationMessageDTO> getMessagesWithSizeAndBeforeTime(String senderUsername, long recipientId, String beforeTime, int size) {
+    public List<ConversationMessageDTO> getMessagesWithSizeAndBeforeTime(String senderUsername, long conversationId, String beforeTime, int size) {
 
-        var senderUserOptional = userRepository.findOneByLoginIgnoreCase(senderUsername);
-        var recipientUserOptional = userRepository.findById(recipientId);
+        var user = userRepository.findOneByLoginIgnoreCase(senderUsername)
+                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + senderUsername + " not exists."));
 
-        if (senderUserOptional.isPresent() && recipientUserOptional.isPresent()) {
-
-            var chatMessageList = conversationMessageRepository
-                    .findUserConversationMessagesBeforeTime(senderUserOptional.get().getId(), recipientUserOptional.get().getId(),
-                            LocalDateTime.parse(beforeTime, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")),
-                            PageRequest.of(0, size));
-            chatMessageList.sort((o1, o2) -> o2.getTime().compareTo(o1.getTime()));
-            return chatMessageList
-                    .stream()
-                    .map(conversationMessageMapper::mapToConversationMessageDTO)
-                    .collect(Collectors.toList());
-        }
-
-        // TODO : throw exception
-        return Collections.emptyList();
+        return conversationRepository.findById(conversationId)
+                .filter(conversation -> conversation.getSender().equals(user))
+                .map(senderConversation -> {
+                    var chatMessageList = conversationMessageRepository
+                            .findUserConversationMessagesBeforeTime(senderConversation.getSender().getId(),
+                                    senderConversation.getRecipient().getId(),
+                                    LocalDateTime.parse(beforeTime, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")),
+                                    PageRequest.of(0, size));
+                    chatMessageList.sort((o1, o2) -> o2.getTime().compareTo(o1.getTime()));
+                    return chatMessageList
+                            .stream()
+                            .map(conversationMessageMapper::mapToConversationMessageDTO)
+                            .collect(Collectors.toList());
+                })
+                .orElseThrow(() -> new NotFoundException("Conversation not found", "We can not find this conversation."));
     }
 
     @Override

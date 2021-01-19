@@ -28,15 +28,13 @@ public class ConversationMessageController {
         return ResponseEntity.ok(conversationMessageService.getMessagesWithSize(principal.getName(), conversationId, size));
     }
 
-
-    @GetMapping(params = {"recipient_user_id", "size", "before_time"})
-    public ResponseEntity<List<ConversationMessageDTO>> getOneToOneConversation(@RequestParam("recipient_user_id") long secondUserId,
+    @GetMapping(params = {"conversation_id", "size", "before_time"})
+    public ResponseEntity<List<ConversationMessageDTO>> getOneToOneConversation(@RequestParam("conversation_id") long conversationId,
                                                                                 @RequestParam("size") int size,
                                                                                 @RequestParam("before_time") String beforeTime,
                                                                                 Principal principal) {
 
-        return ResponseEntity.ok(conversationMessageService.getMessagesWithSizeAndBeforeTime(principal.getName(), secondUserId, beforeTime, size));
+        return ResponseEntity.ok(conversationMessageService.getMessagesWithSizeAndBeforeTime(principal.getName(), conversationId, beforeTime, size));
     }
-
 
 }
