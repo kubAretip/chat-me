@@ -61,7 +61,7 @@ class UserServiceImpl implements UserService {
         authorityRepository.findById(AuthoritiesConstants.USER.getRole()).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
         newUser.setActivationKey(RandomStringUtils.randomAlphanumeric(124));
-        newUser.setFriendRequestCode(newUser.getLogin().toLowerCase() + RandomStringUtils.randomNumeric(9));
+        newUser.setFriendRequestCode(generateFriendRequestCode(newUser.getLogin().toLowerCase()));
         userRepository.save(newUser);
 
         log.debug("Registered new user {}", newUser);

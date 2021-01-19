@@ -61,8 +61,7 @@ class MailServiceImpl implements SendMailService {
         if (userEmail != null) {
             log.debug("Sending email template lang = {} to {}", LocaleContextHolder.getLocale(), userEmail);
 
-            var baseUrl = "http://" + env.getProperty("server.address") + ":" + env.getProperty("server.port") + env.getProperty("server" +
-                    ".servlet.context-path");
+            var baseUrl = env.getProperty("mail.process-url");
             var subject = translator.translate(subjectCode);
             var context = new Context(LocaleContextHolder.getLocale());
             context.setVariable("user", user);

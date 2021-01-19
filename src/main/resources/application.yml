@@ -41,6 +41,9 @@ logging:
     pl:
       chatme: debug
 
+mail:
+  process-url: http://localhost:4200
+
 # Json web token properties
 jwt:
   validity-time-in-seconds: 86400 #24h

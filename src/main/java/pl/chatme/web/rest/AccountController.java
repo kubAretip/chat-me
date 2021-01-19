@@ -64,15 +64,15 @@ public class AccountController {
         }
     }
 
-    // TODO: redirect to frontend
 
+    // TODO : change to patch
     /**
-     * {@code GET /activate} : activate the registered user.
+     * {@code temporary POST mapping /activate} : activate the registered user.
      *
      * @param activationKey the activation key generated during registration.
-     * @return When activation process is successful redirect to information page else redirect to not found
+     * @return When activation process is successful 204 else 404.
      */
-    @GetMapping("/activate")
+    @PostMapping("/activate")
     public ResponseEntity<Void> activateAccount(@RequestParam("data") String activationKey) {
 
         if (userService.activateUser(activationKey))

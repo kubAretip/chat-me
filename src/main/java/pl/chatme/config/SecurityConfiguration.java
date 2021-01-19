@@ -58,7 +58,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .mvcMatchers(HttpMethod.POST, AUTHENTICATE_ENDPOINT).permitAll()
             .mvcMatchers(HttpMethod.POST,"/accounts/register").permitAll()
-            .mvcMatchers(HttpMethod.GET,"/accounts/activate").permitAll()
+            .mvcMatchers(HttpMethod.POST,"/accounts/activate").permitAll()
             .mvcMatchers("/ws").permitAll()
             .anyRequest().authenticated()
         .and()
