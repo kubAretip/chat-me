@@ -34,6 +34,19 @@ public class AccountController {
         this.sendMailService = sendMailService;
     }
 
+    @GetMapping
+    public ResponseEntity<UserDTO> getCurrentLoggedUser(Principal principal) {
+        try {
+            return ResponseEntity.ok(userMapper.mapToUserDTO(userService.getUser(principal.getName())));
+        } catch (NotFoundException ex) {
+            throw Problem.builder()
+                    .withStatus(Status.NOT_FOUND)
+                    .withTitle(ex.getTitle())
+                    .withDetail(ex.getLocalizedMessage())
+                    .build();
+        }
+    }
+
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody UserVM userVM,
                                                 UriComponentsBuilder uriComponentsBuilder) {

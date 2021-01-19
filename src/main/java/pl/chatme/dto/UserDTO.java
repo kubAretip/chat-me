@@ -24,13 +24,14 @@ public class UserDTO {
     private String login;
 
     @Size(max = 50)
+    @NotBlank
     private String firstName;
 
     @Size(max = 50)
+    @NotBlank
     private String lastName;
 
     @Email
-    @Size(min = 5, max = 254)
     private String email;
 
     @NotNull

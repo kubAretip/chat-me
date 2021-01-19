@@ -11,4 +11,6 @@ public interface UserService {
     User renewFriendRequestCode(String username);
 
     User changeUserPassword(String username, String currentPassword, String newPassword);
+
+    User getUser(String name);
 }

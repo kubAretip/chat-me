@@ -123,5 +123,9 @@ class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("User not found", "User with login = " + username + " not exists."));
     }
 
-
+    @Override
+    public User getUser(String username) {
+        return userRepository.findOneByLoginIgnoreCase(username)
+                .orElseThrow(() -> new NotFoundException("User not found", "User with login = " + username + " not exists."));
+    }
 }
