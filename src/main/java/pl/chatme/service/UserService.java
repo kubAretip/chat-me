@@ -9,4 +9,6 @@ public interface UserService {
     boolean activateUser(String activationKey);
 
     User renewFriendRequestCode(String username);
+
+    User changeUserPassword(String username, String currentPassword, String newPassword);
 }

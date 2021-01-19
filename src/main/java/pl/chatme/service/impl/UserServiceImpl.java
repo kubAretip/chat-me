@@ -14,6 +14,7 @@ import pl.chatme.repository.UserRepository;
 import pl.chatme.security.AuthoritiesConstants;
 import pl.chatme.service.UserService;
 import pl.chatme.service.exception.AlreadyExistsException;
+import pl.chatme.service.exception.InvalidDataException;
 import pl.chatme.service.exception.NotFoundException;
 
 import java.util.HashSet;
@@ -107,5 +108,20 @@ class UserServiceImpl implements UserService {
     private String generateFriendRequestCode(String login) {
         return login.toLowerCase() + "-" + RandomStringUtils.randomNumeric(10);
     }
+
+    @Override
+    public User changeUserPassword(String username, String currentPassword, String newPassword) {
+        return userRepository.findOneByLoginIgnoreCase(username)
+                .map(user -> {
+                    if (passwordEncoder.matches(currentPassword, user.getPassword())) {
+                        user.setPassword(passwordEncoder.encode(newPassword));
+                        return userRepository.save(user);
+                    } else {
+                        throw new InvalidDataException("Invalid data.", "Incorrect current password");
+                    }
+                })
+                .orElseThrow(() -> new NotFoundException("User not found", "User with login = " + username + " not exists."));
+    }
+
 
 }

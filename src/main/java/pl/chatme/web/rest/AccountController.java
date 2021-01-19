@@ -7,10 +7,12 @@ import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 import pl.chatme.dto.UserDTO;
 import pl.chatme.dto.mapper.UserMapper;
-import pl.chatme.service.exception.AlreadyExistsException;
-import pl.chatme.service.exception.NotFoundException;
 import pl.chatme.service.SendMailService;
 import pl.chatme.service.UserService;
+import pl.chatme.service.exception.AlreadyExistsException;
+import pl.chatme.service.exception.InvalidDataException;
+import pl.chatme.service.exception.NotFoundException;
+import pl.chatme.web.rest.vm.ChangePasswordVM;
 import pl.chatme.web.rest.vm.UserVM;
 
 import javax.validation.Valid;
@@ -70,6 +72,27 @@ public class AccountController {
     public ResponseEntity<UserDTO> renewFriendRequestCode(Principal principal) {
         try {
             return ResponseEntity.ok(userMapper.mapToUserDTO(userService.renewFriendRequestCode(principal.getName())));
+        } catch (NotFoundException exception) {
+            throw Problem.builder()
+                    .withStatus(Status.NOT_FOUND)
+                    .withTitle(exception.getTitle())
+                    .withDetail(exception.getLocalizedMessage())
+                    .build();
+        }
+    }
+
+    @PatchMapping("/change-password")
+    public ResponseEntity<UserDTO> changeUserPassword(@Valid @RequestBody ChangePasswordVM changePasswordVM, Principal principal) {
+        try {
+            return ResponseEntity.ok(userMapper.mapToUserDTO(userService.changeUserPassword(principal.getName(),
+                    changePasswordVM.getCurrentPassword(),
+                    changePasswordVM.getNewPassword())));
+        } catch (InvalidDataException ex) {
+            throw Problem.builder()
+                    .withStatus(Status.BAD_REQUEST)
+                    .withTitle(ex.getTitle())
+                    .withDetail(ex.getLocalizedMessage())
+                    .build();
         } catch (NotFoundException exception) {
             throw Problem.builder()
                     .withStatus(Status.NOT_FOUND)
