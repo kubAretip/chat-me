@@ -13,12 +13,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 import pl.chatme.security.AuthenticationFailureHandler;
 import pl.chatme.security.AuthenticationSuccessHandler;
 import pl.chatme.security.jwt.JWTAuthenticationFilter;
 import pl.chatme.security.jwt.JWTAuthorizationFilter;
 import pl.chatme.security.jwt.TokenProvider;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @EnableWebSecurity
 @Import(SecurityProblemSupport.class)
@@ -58,7 +62,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .mvcMatchers(HttpMethod.POST, AUTHENTICATE_ENDPOINT).permitAll()
             .mvcMatchers(HttpMethod.POST,"/accounts/register").permitAll()
-            .mvcMatchers(HttpMethod.POST,"/accounts/activate").permitAll()
+            .mvcMatchers(HttpMethod.PATCH,"/accounts/activate").permitAll()
             .mvcMatchers("/ws").permitAll()
             .anyRequest().authenticated()
         .and()
@@ -99,7 +103,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public CorsConfigurationSource corsConfigurationSource() {
 
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        var corsConfiguration = new CorsConfiguration();
+        corsConfiguration.addAllowedOrigin("*");
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedMethod(HttpMethod.POST);
+        corsConfiguration.addAllowedMethod(HttpMethod.GET);
+        corsConfiguration.addAllowedMethod(HttpMethod.PUT);
+        corsConfiguration.addAllowedMethod(HttpMethod.PATCH);
+        source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
     }
 

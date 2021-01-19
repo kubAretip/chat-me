@@ -65,14 +65,13 @@ public class AccountController {
     }
 
 
-    // TODO : change to patch
     /**
-     * {@code temporary POST mapping /activate} : activate the registered user.
+     * {@code  PATCH /activate} : activate the registered user.
      *
      * @param activationKey the activation key generated during registration.
      * @return When activation process is successful 204 else 404.
      */
-    @PostMapping("/activate")
+    @PatchMapping("/activate")
     public ResponseEntity<Void> activateAccount(@RequestParam("data") String activationKey) {
 
         if (userService.activateUser(activationKey))
