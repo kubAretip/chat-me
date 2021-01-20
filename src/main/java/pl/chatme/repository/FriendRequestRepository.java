@@ -11,7 +11,11 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
 
     boolean existsBySenderAndRecipientOrRecipientAndSender(User s1, User r1, User s2, User r2);
 
-    @Query(value = "SELECT * FROM friend_request where user_recipient_id=:recipientId AND status = 'SENT'", nativeQuery = true)
-    List<FriendRequest> findByRecipientId(long recipientId);
+    @Query(value =
+            "SELECT * FROM friend_request " +
+                    "WHERE (user_sender_id=:userId OR user_recipient_id=:userId) " +
+                    "AND status = 'SENT'",
+            nativeQuery = true)
+    List<FriendRequest> findSentFriendRequestByRecipientIdOrSenderId(long userId);
 
 }
