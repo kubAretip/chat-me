@@ -81,12 +81,16 @@ public class FriendRequestController {
         try {
             var friendRequest = friendRequestService.replyToFriendRequest(friendRequestId, principal.getName(), accept);
 
-            if (friendRequest.getStatus().equals(FriendRequestStatus.ACCEPTED)) {
-                // create conversation
-                conversationService.createUsersConversation(friendRequest.getSender(), friendRequest.getRecipient());
+            if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
+                // delete friend request
+                friendRequestService.deleteRejectedFriendRequest(friendRequest);
+                return ResponseEntity.noContent().build();
             }
 
+            // create conversation
+            conversationService.createUsersConversation(friendRequest.getSender(), friendRequest.getRecipient());
             return ResponseEntity.ok(friendRequestMapper.mapToFriendRequestDTO(friendRequest));
+
         } catch (NotFoundException ex) {
             throw Problem.builder()
                     .withTitle(ex.getTitle())
@@ -96,12 +100,6 @@ public class FriendRequestController {
         } catch (InvalidDataException ex) {
             throw Problem.builder()
                     .withStatus(Status.BAD_REQUEST)
-                    .withTitle(ex.getTitle())
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        } catch (AlreadyExistsException ex) {
-            throw Problem.builder()
-                    .withStatus(Status.CONFLICT)
                     .withTitle(ex.getTitle())
                     .withDetail(ex.getLocalizedMessage())
                     .build();

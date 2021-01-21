@@ -12,7 +12,6 @@ import pl.chatme.service.exception.NotFoundException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 class FriendRequestServiceImpl implements FriendRequestService {
@@ -90,5 +89,12 @@ class FriendRequestServiceImpl implements FriendRequestService {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(user -> friendRequestRepository.findSentFriendRequestByRecipientIdOrSenderId(user.getId()))
                 .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
+    }
+
+    @Override
+    public void deleteRejectedFriendRequest(FriendRequest friendRequest) {
+        if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
+            friendRequestRepository.delete(friendRequest);
+        }
     }
 }

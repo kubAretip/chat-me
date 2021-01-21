@@ -10,4 +10,6 @@ public interface FriendRequestService {
     FriendRequest replyToFriendRequest(long friendRequestId, String recipientUsername, boolean accept);
 
     List<FriendRequest> getFriendRequest(String username);
+
+    void deleteRejectedFriendRequest(FriendRequest friendRequest);
 }
