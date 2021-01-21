@@ -92,6 +92,14 @@ class FriendRequestServiceImpl implements FriendRequestService {
     }
 
     @Override
+    public List<FriendRequest> getSenderFriendRequestByStatus(String username, FriendRequestStatus status) {
+        return userRepository.findOneByLoginIgnoreCase(username)
+                .map(user -> friendRequestRepository.findBySenderAndStatus(user, status))
+                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
+    }
+
+
+    @Override
     public void deleteRejectedFriendRequest(FriendRequest friendRequest) {
         if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
             friendRequestRepository.delete(friendRequest);

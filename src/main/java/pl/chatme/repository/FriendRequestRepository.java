@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import pl.chatme.domain.FriendRequest;
 import pl.chatme.domain.User;
+import pl.chatme.domain.enumerated.FriendRequestStatus;
 
 import java.util.List;
 
@@ -17,5 +18,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
                     "AND status = 'SENT'",
             nativeQuery = true)
     List<FriendRequest> findSentFriendRequestByRecipientIdOrSenderId(long userId);
+
+    List<FriendRequest> findBySenderAndStatus(User sender, FriendRequestStatus status);
 
 }

@@ -42,6 +42,30 @@ public class FriendRequestController {
                 .collect(Collectors.toList()));
     }
 
+    @GetMapping(params = {"status"})
+    public ResponseEntity<List<FriendRequestDTO>> getSenderFriendRequestByStatus(@RequestParam("status") String status,
+                                                                                 Principal principal) {
+        try {
+            if (status.equalsIgnoreCase(FriendRequestStatus.SENT.name())) {
+                return ResponseEntity.ok(
+                        friendRequestService.getSenderFriendRequestByStatus(principal.getName(), FriendRequestStatus.SENT)
+                                .stream()
+                                .map(friendRequestMapper::mapToFriendRequestDTO)
+                                .collect(Collectors.toList()));
+            }
+        } catch (NotFoundException ex) {
+            throw Problem.builder()
+                    .withTitle(ex.getTitle())
+                    .withStatus(Status.NOT_FOUND)
+                    .withDetail(ex.getLocalizedMessage())
+                    .build();
+        }
+        throw Problem.builder()
+                .withTitle("Invalid param status value")
+                .withStatus(Status.BAD_REQUEST)
+                .withDetail("We not support searching by status = " + status)
+                .build();
+    }
 
     @PostMapping(params = {"invite_code"})
     public ResponseEntity<FriendRequestDTO> sendNewFriendRequest(@RequestParam("invite_code") String inviteCode,
