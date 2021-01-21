@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/friends")
+@RequestMapping("/friends-request")
 public class FriendRequestController {
 
     private final FriendRequestService friendRequestService;
@@ -35,20 +35,21 @@ public class FriendRequestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FriendRequestDTO>> getFriendRequests(Principal principal) {
-        return ResponseEntity.ok(friendRequestService.getFriendRequest(principal.getName())
+    public ResponseEntity<List<FriendRequestDTO>> getReceivedFriendRequests(Principal principal) {
+        return ResponseEntity.ok(friendRequestService.fetchAllFriendsRequestForRecipient(principal.getName())
                 .stream()
                 .map(friendRequestMapper::mapToFriendRequestDTO)
                 .collect(Collectors.toList()));
     }
 
+
     @GetMapping(params = {"status"})
-    public ResponseEntity<List<FriendRequestDTO>> getSenderFriendRequestByStatus(@RequestParam("status") String status,
-                                                                                 Principal principal) {
+    public ResponseEntity<List<FriendRequestDTO>> getSentFriendsRequestByStatus(@RequestParam("status") String status,
+                                                                                Principal principal) {
         try {
             if (status.equalsIgnoreCase(FriendRequestStatus.SENT.name())) {
                 return ResponseEntity.ok(
-                        friendRequestService.getSenderFriendRequestByStatus(principal.getName(), FriendRequestStatus.SENT)
+                        friendRequestService.getSenderFriendsRequestByStatus(principal.getName(), FriendRequestStatus.SENT)
                                 .stream()
                                 .map(friendRequestMapper::mapToFriendRequestDTO)
                                 .collect(Collectors.toList()));
@@ -68,12 +69,12 @@ public class FriendRequestController {
     }
 
     @PostMapping(params = {"invite_code"})
-    public ResponseEntity<FriendRequestDTO> sendNewFriendRequest(@RequestParam("invite_code") String inviteCode,
-                                                                 Principal principal,
-                                                                 UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<FriendRequestDTO> createNewFriendsRequest(@RequestParam("invite_code") String inviteCode,
+                                                                  Principal principal,
+                                                                  UriComponentsBuilder uriComponentsBuilder) {
 
         try {
-            var newFriendRequest = friendRequestService.sendFriendRequest(principal.getName(), inviteCode);
+            var newFriendRequest = friendRequestService.createNewFriendsRequest(principal.getName(), inviteCode);
             var uri = uriComponentsBuilder.path("/friends/{id}").buildAndExpand(newFriendRequest.getId());
             return ResponseEntity.created(uri.toUri())
                     .body(friendRequestMapper.mapToFriendRequestDTO(newFriendRequest));
@@ -99,11 +100,11 @@ public class FriendRequestController {
     }
 
     @PatchMapping(path = "/{id}", params = {"accept"})
-    public ResponseEntity<FriendRequestDTO> replyToFriendRequest(@PathVariable("id") long friendRequestId,
-                                                                 @RequestParam("accept") boolean accept,
-                                                                 Principal principal) {
+    public ResponseEntity<FriendRequestDTO> replyToFriendsRequest(@PathVariable("id") long friendRequestId,
+                                                                  @RequestParam("accept") boolean accept,
+                                                                  Principal principal) {
         try {
-            var friendRequest = friendRequestService.replyToFriendRequest(friendRequestId, principal.getName(), accept);
+            var friendRequest = friendRequestService.replyToFriendsRequest(friendRequestId, principal.getName(), accept);
 
             if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
                 // delete friend request

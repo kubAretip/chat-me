@@ -6,13 +6,15 @@ import pl.chatme.domain.enumerated.FriendRequestStatus;
 import java.util.List;
 
 public interface FriendRequestService {
-    FriendRequest sendFriendRequest(String senderUsername, String friendRequestCode);
+    FriendRequest createNewFriendsRequest(String senderUsername, String friendRequestCode);
 
-    FriendRequest replyToFriendRequest(long friendRequestId, String recipientUsername, boolean accept);
+    FriendRequest replyToFriendsRequest(long friendRequestId, String recipientUsername, boolean accept);
 
     List<FriendRequest> getFriendRequest(String username);
 
-    List<FriendRequest> getSenderFriendRequestByStatus(String username, FriendRequestStatus status);
+    List<FriendRequest> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status);
+
+    List<FriendRequest> fetchAllFriendsRequestForRecipient(String username);
 
     void deleteRejectedFriendRequest(FriendRequest friendRequest);
 }

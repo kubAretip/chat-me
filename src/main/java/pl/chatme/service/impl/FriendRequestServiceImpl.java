@@ -26,7 +26,7 @@ class FriendRequestServiceImpl implements FriendRequestService {
     }
 
     @Override
-    public FriendRequest sendFriendRequest(String senderUsername, String friendRequestCode) {
+    public FriendRequest createNewFriendsRequest(String senderUsername, String friendRequestCode) {
 
         var senderOptional = userRepository.findOneByLoginIgnoreCase(senderUsername);
         var friendRequestRecipientOptional = userRepository.findByFriendRequestCode(friendRequestCode);
@@ -61,7 +61,7 @@ class FriendRequestServiceImpl implements FriendRequestService {
     }
 
     @Override
-    public FriendRequest replyToFriendRequest(long friendRequestId, String recipientUsername, boolean accept) {
+    public FriendRequest replyToFriendsRequest(long friendRequestId, String recipientUsername, boolean accept) {
         return friendRequestRepository.findById(friendRequestId)
                 .map(friendRequest -> {
 
@@ -92,9 +92,16 @@ class FriendRequestServiceImpl implements FriendRequestService {
     }
 
     @Override
-    public List<FriendRequest> getSenderFriendRequestByStatus(String username, FriendRequestStatus status) {
+    public List<FriendRequest> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status) {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(user -> friendRequestRepository.findBySenderAndStatus(user, status))
+                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
+    }
+
+    @Override
+    public List<FriendRequest> fetchAllFriendsRequestForRecipient(String username) {
+        return userRepository.findOneByLoginIgnoreCase(username)
+                .map(user -> friendRequestRepository.findByRecipientAndStatus(user, FriendRequestStatus.SENT))
                 .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
     }
 
