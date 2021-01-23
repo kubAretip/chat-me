@@ -1,12 +1,12 @@
 package pl.chatme.web.rest;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
 import pl.chatme.dto.ConversationMessageDTO;
 import pl.chatme.service.ConversationMessageService;
+import pl.chatme.service.exception.NotFoundException;
 
 import java.security.Principal;
 import java.util.List;
@@ -21,6 +21,7 @@ public class ConversationMessageController {
         this.conversationMessageService = conversationMessageService;
     }
 
+    // TODO : change method name
     @GetMapping(params = {"conversation_id", "size"})
     public ResponseEntity<List<ConversationMessageDTO>> getMessageWithSize(@RequestParam("conversation_id") long conversationId,
                                                                            @RequestParam("size") int size,
@@ -35,6 +36,22 @@ public class ConversationMessageController {
                                                                                 Principal principal) {
 
         return ResponseEntity.ok(conversationMessageService.getMessagesWithSizeAndBeforeTime(principal.getName(), conversationId, beforeTime, size));
+    }
+
+    @PatchMapping(params = {"conversation_with_id"})
+    public ResponseEntity<Void> markConversationReceivedMessagesAsDelivered(@RequestParam("conversation_with_id") long conversationId,
+                                                                            Principal principal) {
+
+        try {
+            conversationMessageService.setAllRecipientMessagesStatusAsDelivered(conversationId,principal.getName());
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException ex) {
+            throw Problem.builder()
+                    .withStatus(Status.NOT_FOUND)
+                    .withTitle(ex.getTitle())
+                    .withDetail(ex.getLocalizedMessage())
+                    .build();
+        }
     }
 
 }

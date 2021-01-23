@@ -7,10 +7,17 @@ import pl.chatme.domain.User;
 import pl.chatme.domain.enumerated.FriendRequestStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
 
-    boolean existsBySenderAndRecipientOrRecipientAndSender(User s1, User r1, User s2, User r2);
+    @Query(
+            value = "SELECT * FROM friend_request " +
+                    "WHERE (user_sender_id=:senderId AND user_recipient_id=:recipientId) OR " +
+                    "(user_sender_id=:recipientId AND user_recipient_id=:senderId)",
+            nativeQuery = true
+    )
+    Optional<FriendRequest> existsFriendsRequestForUsers(Long senderId, Long recipientId);
 
     @Query(value =
             "SELECT * FROM friend_request " +

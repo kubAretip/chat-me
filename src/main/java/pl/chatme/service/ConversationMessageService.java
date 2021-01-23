@@ -12,4 +12,6 @@ public interface ConversationMessageService {
     List<ConversationMessageDTO> getMessagesWithSizeAndBeforeTime(String senderUsername, long conversationId, String beforeTime, int size);
 
     List<ConversationMessageDTO> getMessagesWithSize(String senderUsername, long conversationId, int size);
+
+    void setAllRecipientMessagesStatusAsDelivered(long conversationId, String recipientUsername);
 }

@@ -70,8 +70,8 @@ public class FriendRequestController {
 
     @PostMapping(params = {"invite_code"})
     public ResponseEntity<FriendRequestDTO> createNewFriendsRequest(@RequestParam("invite_code") String inviteCode,
-                                                                  Principal principal,
-                                                                  UriComponentsBuilder uriComponentsBuilder) {
+                                                                    Principal principal,
+                                                                    UriComponentsBuilder uriComponentsBuilder) {
 
         try {
             var newFriendRequest = friendRequestService.createNewFriendsRequest(principal.getName(), inviteCode);
@@ -129,7 +129,28 @@ public class FriendRequestController {
                     .withDetail(ex.getLocalizedMessage())
                     .build();
         }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSentFriendsRequestById(@PathVariable("id") Long id, Principal principal) {
+        try {
+            friendRequestService.deleteFriendRequest(principal.getName(), id);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException ex) {
+            throw Problem.builder()
+                    .withTitle(ex.getTitle())
+                    .withStatus(Status.NOT_FOUND)
+                    .withDetail(ex.getLocalizedMessage())
+                    .build();
+        } catch (InvalidDataException ex) {
+            throw Problem.builder()
+                    .withStatus(Status.BAD_REQUEST)
+                    .withTitle(ex.getTitle())
+                    .withDetail(ex.getLocalizedMessage())
+                    .build();
+        }
 
     }
+
 
 }

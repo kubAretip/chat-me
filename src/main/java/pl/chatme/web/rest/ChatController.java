@@ -38,9 +38,14 @@ public class ChatController {
 
         conversationService.getConversation(principal.getName(), message.getRecipient().getId())
                 .ifPresent(conversation -> {
-                    var conversationMessage = conversationMessageService.saveConversationMessage(conversation, message.getContent(), message.getTime());
+
+                    var conversationMessage = conversationMessageService.saveConversationMessage(conversation,
+                            message.getContent(),
+                            message.getTime());
+
                     simpMessagingTemplate.convertAndSendToUser(conversationMessage.getRecipient().getId().toString(),
-                            "/queue/messages", conversationMessageMapper.mapToConversationMessageDTO(conversationMessage));
+                            "/queue/messages",
+                            conversationMessageMapper.mapToConversationMessageDTO(conversationMessage));
                 });
         return ResponseEntity.ok("CONNECTED");
     }

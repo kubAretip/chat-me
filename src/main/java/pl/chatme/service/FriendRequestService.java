@@ -17,4 +17,6 @@ public interface FriendRequestService {
     List<FriendRequest> fetchAllFriendsRequestForRecipient(String username);
 
     void deleteRejectedFriendRequest(FriendRequest friendRequest);
+
+    void deleteFriendRequest(String senderUsername, Long id);
 }

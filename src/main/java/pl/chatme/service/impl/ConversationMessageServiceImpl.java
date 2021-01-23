@@ -109,4 +109,25 @@ class ConversationMessageServiceImpl implements ConversationMessageService {
                 .orElseThrow(() -> new NotFoundException("Conversation not found", "We can not find this conversation."));
     }
 
+    @Override
+    public void setAllRecipientMessagesStatusAsDelivered(long conversationWithId, String recipientUsername) {
+
+        userRepository.findOneByLoginIgnoreCase(recipientUsername)
+                .ifPresentOrElse(recipient -> {
+                    conversationRepository.findById(conversationWithId)
+                            .ifPresentOrElse(conversationWith -> {
+                                var markedMessages = conversationMessageRepository
+                                        .findByRecipientAndMessageStatusAndConversation(recipient, MessageStatus.RECEIVED, conversationWith)
+                                        .stream()
+                                        .peek(message -> message.setMessageStatus(MessageStatus.DELIVERED))
+                                        .collect(Collectors.toList());
+                                conversationMessageRepository.saveAll(markedMessages);
+                            }, () -> {
+                                throw new NotFoundException("Conversation not found.", "Conversation no exists.");
+                            });
+                }, () -> {
+                    throw new NotFoundException("User not found.", "User with login " + recipientUsername + " not exists.");
+                });
+    }
+
 }

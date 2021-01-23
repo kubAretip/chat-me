@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import pl.chatme.domain.Conversation;
 import pl.chatme.domain.ConversationMessage;
+import pl.chatme.domain.User;
+import pl.chatme.domain.enumerated.MessageStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,5 +25,11 @@ public interface ConversationMessageRepository extends JpaRepository<Conversatio
                                                                      Pageable pageable);
 
     List<ConversationMessage> findByConversationOrConversation(Conversation c1, Conversation c2, Pageable pageable);
+
+    List<ConversationMessage> findByRecipientAndMessageStatus(User recipient, MessageStatus status);
+
+    List<ConversationMessage> findByRecipientAndMessageStatusAndConversation(User recipient, MessageStatus status,
+                                                                             Conversation conversation);
+
 
 }

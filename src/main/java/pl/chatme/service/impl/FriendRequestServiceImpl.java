@@ -1,5 +1,6 @@
 package pl.chatme.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.FriendRequest;
 import pl.chatme.domain.enumerated.FriendRequestStatus;
@@ -13,6 +14,7 @@ import pl.chatme.service.exception.NotFoundException;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 class FriendRequestServiceImpl implements FriendRequestService {
 
@@ -45,10 +47,10 @@ class FriendRequestServiceImpl implements FriendRequestService {
             throw new InvalidDataException("You can't do this!", "You can not send a friend request to yourself.");
 
         var isAlreadyExistsFriendRequest = friendRequestRepository
-                .existsBySenderAndRecipientOrRecipientAndSender(sender, friendRequestRecipient, friendRequestRecipient, sender);
+                .existsFriendsRequestForUsers(sender.getId(), friendRequestRecipient.getId());
 
-        if (isAlreadyExistsFriendRequest) {
-            throw new AlreadyExistsException("Already sent.", "Friend request was already sent.");
+        if (isAlreadyExistsFriendRequest.isPresent()) {
+            throw new AlreadyExistsException("Already sent.", "We already register this friends request.");
         }
 
         var newFriendRequest = new FriendRequest();
@@ -111,5 +113,28 @@ class FriendRequestServiceImpl implements FriendRequestService {
         if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
             friendRequestRepository.delete(friendRequest);
         }
+    }
+
+
+    @Override
+    public void deleteFriendRequest(String senderUsername, Long id) {
+        var senderOptional = userRepository.findOneByLoginIgnoreCase(senderUsername);
+
+        if (senderOptional.isPresent()) {
+            var sender = senderOptional.get();
+
+            friendRequestRepository.findById(id)
+                    .ifPresent(friendRequest -> {
+                        if (!friendRequest.getSender().equals(sender)) {
+                            throw new InvalidDataException("Invalid data", "You are not the friend request owner.");
+                        }
+                        if (!friendRequest.getStatus().equals(FriendRequestStatus.SENT))
+                            throw new InvalidDataException("Invalid data",
+                                    "You can't cancel friends request with status " + friendRequest.getStatus().name().toLowerCase());
+
+                        friendRequestRepository.delete(friendRequest);
+                    });
+        } else
+            throw new NotFoundException("User not found.", "User with login " + senderUsername + " not exists.");
     }
 }
