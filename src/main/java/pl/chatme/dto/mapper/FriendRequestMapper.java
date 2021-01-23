@@ -8,6 +8,10 @@ import pl.chatme.dto.FriendRequestDTO;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+
+/**
+ * A mapper for {@link FriendRequest} <=> {@link FriendRequestDTO}.
+ */
 @Mapper(componentModel = "spring")
 public interface FriendRequestMapper {
 

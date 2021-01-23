@@ -1,4 +1,4 @@
-package pl.chatme.service.exception;
+package pl.chatme.exception;
 
 import lombok.Getter;
 import lombok.Setter;

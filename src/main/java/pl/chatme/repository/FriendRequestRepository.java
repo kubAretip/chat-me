@@ -9,6 +9,9 @@ import pl.chatme.domain.enumerated.FriendRequestStatus;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Spring Data JPA repository for the {@link FriendRequest} entity.
+ */
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
 
     @Query(
@@ -18,13 +21,6 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
             nativeQuery = true
     )
     Optional<FriendRequest> existsFriendsRequestForUsers(Long senderId, Long recipientId);
-
-    @Query(value =
-            "SELECT * FROM friend_request " +
-                    "WHERE (user_sender_id=:userId OR user_recipient_id=:userId) " +
-                    "AND status = 'SENT'",
-            nativeQuery = true)
-    List<FriendRequest> findSentFriendRequestByRecipientIdOrSenderId(long userId);
 
     List<FriendRequest> findBySenderAndStatus(User sender, FriendRequestStatus status);
 

@@ -7,6 +7,9 @@ import pl.chatme.domain.User;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Spring Data JPA repository for the {@link Conversation} entity.
+ */
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
     Optional<Conversation> findBySenderAndRecipient(User sender, User recipient);

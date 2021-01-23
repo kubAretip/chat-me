@@ -2,11 +2,8 @@ package pl.chatme.web.rest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zalando.problem.Problem;
-import org.zalando.problem.Status;
 import pl.chatme.dto.ConversationMessageDTO;
 import pl.chatme.service.ConversationMessageService;
-import pl.chatme.service.exception.NotFoundException;
 
 import java.security.Principal;
 import java.util.List;
@@ -42,16 +39,9 @@ public class ConversationMessageController {
     public ResponseEntity<Void> markConversationReceivedMessagesAsDelivered(@RequestParam("conversation_with_id") long conversationId,
                                                                             Principal principal) {
 
-        try {
-            conversationMessageService.setAllRecipientMessagesStatusAsDelivered(conversationId,principal.getName());
-            return ResponseEntity.noContent().build();
-        } catch (NotFoundException ex) {
-            throw Problem.builder()
-                    .withStatus(Status.NOT_FOUND)
-                    .withTitle(ex.getTitle())
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        }
+        conversationMessageService.setAllRecipientMessagesStatusAsDelivered(conversationId, principal.getName());
+        return ResponseEntity.noContent().build();
+
     }
 
 }

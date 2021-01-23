@@ -7,9 +7,9 @@ import pl.chatme.domain.enumerated.FriendRequestStatus;
 import pl.chatme.repository.FriendRequestRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.FriendRequestService;
-import pl.chatme.service.exception.AlreadyExistsException;
-import pl.chatme.service.exception.InvalidDataException;
-import pl.chatme.service.exception.NotFoundException;
+import pl.chatme.exception.AlreadyExistsException;
+import pl.chatme.exception.InvalidDataException;
+import pl.chatme.exception.NotFoundException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -84,13 +84,6 @@ class FriendRequestServiceImpl implements FriendRequestService {
                 })
                 .orElseThrow((() -> new NotFoundException("Friend request not found.",
                         "We can not find this friend request.")));
-    }
-
-    @Override
-    public List<FriendRequest> getFriendRequest(String username) {
-        return userRepository.findOneByLoginIgnoreCase(username)
-                .map(user -> friendRequestRepository.findSentFriendRequestByRecipientIdOrSenderId(user.getId()))
-                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
     }
 
     @Override

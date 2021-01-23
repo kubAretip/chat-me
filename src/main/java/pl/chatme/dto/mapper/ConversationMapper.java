@@ -5,6 +5,9 @@ import org.mapstruct.Mapping;
 import pl.chatme.domain.Conversation;
 import pl.chatme.dto.ConversationDTO;
 
+/**
+ * A mapper for {@link Conversation} <=> {@link ConversationDTO}.
+ */
 @Mapper(componentModel = "spring")
 public interface ConversationMapper {
 

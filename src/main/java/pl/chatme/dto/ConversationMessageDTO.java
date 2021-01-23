@@ -3,7 +3,11 @@ package pl.chatme.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.chatme.domain.ConversationMessage;
 
+/**
+ * A DTO representing a {@link ConversationMessage}.
+ */
 @Setter
 @Getter
 @NoArgsConstructor

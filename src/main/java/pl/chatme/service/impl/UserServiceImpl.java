@@ -9,13 +9,13 @@ import pl.chatme.domain.Authority;
 import pl.chatme.domain.User;
 import pl.chatme.dto.UserDTO;
 import pl.chatme.dto.mapper.UserMapper;
+import pl.chatme.exception.AlreadyExistsException;
+import pl.chatme.exception.InvalidDataException;
+import pl.chatme.exception.NotFoundException;
 import pl.chatme.repository.AuthorityRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.security.AuthoritiesConstants;
 import pl.chatme.service.UserService;
-import pl.chatme.service.exception.AlreadyExistsException;
-import pl.chatme.service.exception.InvalidDataException;
-import pl.chatme.service.exception.NotFoundException;
 
 import java.util.HashSet;
 
@@ -69,12 +69,12 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean activateUser(String activationKey) {
+    public void activateUser(String activationKey) {
 
         if (Strings.isNullOrEmpty(activationKey))
-            return false;
+            throw new NotFoundException("Invalid activation key", "Activation key not exists");
 
-        return userRepository.findOneByActivationKey(activationKey)
+        userRepository.findOneByActivationKey(activationKey)
                 .map(user -> {
                     log.debug("Activation user with id {} with key {}", user.getId(), activationKey);
                     user.setActivated(true);
@@ -82,7 +82,7 @@ class UserServiceImpl implements UserService {
                     userRepository.save(user);
                     return true;
                 })
-                .orElse(false);
+                .orElseThrow(() -> new NotFoundException("Invalid activation key", "Activation key not exists"));
     }
 
 

@@ -8,12 +8,12 @@ import pl.chatme.dto.ConversationMessageDTO;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
+/**
+ * A mapper for {@link ConversationMessage} <=> {@link ConversationMessageDTO}.
+ */
 @Mapper(componentModel = "spring")
 public interface ConversationMessageMapper {
-
-    List<ConversationMessageDTO> mapToChatMessageListDTO(List<ConversationMessage> entityList);
 
     @Mapping(target = "time", expression = "java(convertTime(conversationMessage.getTime()))")
     @Mapping(target = "conversationId", expression = "java(getConversationId(conversationMessage.getConversation()))")

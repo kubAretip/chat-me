@@ -10,8 +10,6 @@ public interface FriendRequestService {
 
     FriendRequest replyToFriendsRequest(long friendRequestId, String recipientUsername, boolean accept);
 
-    List<FriendRequest> getFriendRequest(String username);
-
     List<FriendRequest> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status);
 
     List<FriendRequest> fetchAllFriendsRequestForRecipient(String username);

@@ -10,9 +10,6 @@ import pl.chatme.dto.FriendRequestDTO;
 import pl.chatme.dto.mapper.FriendRequestMapper;
 import pl.chatme.service.ConversationService;
 import pl.chatme.service.FriendRequestService;
-import pl.chatme.service.exception.AlreadyExistsException;
-import pl.chatme.service.exception.InvalidDataException;
-import pl.chatme.service.exception.NotFoundException;
 
 import java.security.Principal;
 import java.util.List;
@@ -46,21 +43,15 @@ public class FriendRequestController {
     @GetMapping(params = {"status"})
     public ResponseEntity<List<FriendRequestDTO>> getSentFriendsRequestByStatus(@RequestParam("status") String status,
                                                                                 Principal principal) {
-        try {
-            if (status.equalsIgnoreCase(FriendRequestStatus.SENT.name())) {
-                return ResponseEntity.ok(
-                        friendRequestService.getSenderFriendsRequestByStatus(principal.getName(), FriendRequestStatus.SENT)
-                                .stream()
-                                .map(friendRequestMapper::mapToFriendRequestDTO)
-                                .collect(Collectors.toList()));
-            }
-        } catch (NotFoundException ex) {
-            throw Problem.builder()
-                    .withTitle(ex.getTitle())
-                    .withStatus(Status.NOT_FOUND)
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
+
+        if (status.equalsIgnoreCase(FriendRequestStatus.SENT.name())) {
+            return ResponseEntity.ok(
+                    friendRequestService.getSenderFriendsRequestByStatus(principal.getName(), FriendRequestStatus.SENT)
+                            .stream()
+                            .map(friendRequestMapper::mapToFriendRequestDTO)
+                            .collect(Collectors.toList()));
         }
+
         throw Problem.builder()
                 .withTitle("Invalid param status value")
                 .withStatus(Status.BAD_REQUEST)
@@ -73,82 +64,37 @@ public class FriendRequestController {
                                                                     Principal principal,
                                                                     UriComponentsBuilder uriComponentsBuilder) {
 
-        try {
-            var newFriendRequest = friendRequestService.createNewFriendsRequest(principal.getName(), inviteCode);
-            var uri = uriComponentsBuilder.path("/friends/{id}").buildAndExpand(newFriendRequest.getId());
-            return ResponseEntity.created(uri.toUri())
-                    .body(friendRequestMapper.mapToFriendRequestDTO(newFriendRequest));
-        } catch (NotFoundException ex) {
-            throw Problem.builder()
-                    .withTitle(ex.getTitle())
-                    .withStatus(Status.NOT_FOUND)
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        } catch (AlreadyExistsException ex) {
-            throw Problem.builder()
-                    .withStatus(Status.CONFLICT)
-                    .withTitle(ex.getTitle())
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        } catch (InvalidDataException ex) {
-            throw Problem.builder()
-                    .withStatus(Status.BAD_REQUEST)
-                    .withTitle(ex.getTitle())
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        }
+        var newFriendRequest = friendRequestService.createNewFriendsRequest(principal.getName(), inviteCode);
+        var uri = uriComponentsBuilder.path("/friends/{id}").buildAndExpand(newFriendRequest.getId());
+        return ResponseEntity.created(uri.toUri())
+                .body(friendRequestMapper.mapToFriendRequestDTO(newFriendRequest));
+
     }
 
     @PatchMapping(path = "/{id}", params = {"accept"})
     public ResponseEntity<FriendRequestDTO> replyToFriendsRequest(@PathVariable("id") long friendRequestId,
                                                                   @RequestParam("accept") boolean accept,
                                                                   Principal principal) {
-        try {
-            var friendRequest = friendRequestService.replyToFriendsRequest(friendRequestId, principal.getName(), accept);
 
-            if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
-                // delete friend request
-                friendRequestService.deleteRejectedFriendRequest(friendRequest);
-                return ResponseEntity.noContent().build();
-            }
+        var friendRequest = friendRequestService.replyToFriendsRequest(friendRequestId, principal.getName(), accept);
 
-            // create conversation
-            conversationService.createUsersConversation(friendRequest.getSender(), friendRequest.getRecipient());
-            return ResponseEntity.ok(friendRequestMapper.mapToFriendRequestDTO(friendRequest));
-
-        } catch (NotFoundException ex) {
-            throw Problem.builder()
-                    .withTitle(ex.getTitle())
-                    .withStatus(Status.NOT_FOUND)
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        } catch (InvalidDataException ex) {
-            throw Problem.builder()
-                    .withStatus(Status.BAD_REQUEST)
-                    .withTitle(ex.getTitle())
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
+        if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
+            // delete friend request
+            friendRequestService.deleteRejectedFriendRequest(friendRequest);
+            return ResponseEntity.noContent().build();
         }
+
+        // create conversation
+        conversationService.createUsersConversation(friendRequest.getSender(), friendRequest.getRecipient());
+        return ResponseEntity.ok(friendRequestMapper.mapToFriendRequestDTO(friendRequest));
+
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSentFriendsRequestById(@PathVariable("id") Long id, Principal principal) {
-        try {
-            friendRequestService.deleteFriendRequest(principal.getName(), id);
-            return ResponseEntity.noContent().build();
-        } catch (NotFoundException ex) {
-            throw Problem.builder()
-                    .withTitle(ex.getTitle())
-                    .withStatus(Status.NOT_FOUND)
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        } catch (InvalidDataException ex) {
-            throw Problem.builder()
-                    .withStatus(Status.BAD_REQUEST)
-                    .withTitle(ex.getTitle())
-                    .withDetail(ex.getLocalizedMessage())
-                    .build();
-        }
+
+        friendRequestService.deleteFriendRequest(principal.getName(), id);
+        return ResponseEntity.noContent().build();
 
     }
 

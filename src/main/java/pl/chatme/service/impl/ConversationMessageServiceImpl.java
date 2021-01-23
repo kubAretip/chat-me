@@ -1,5 +1,6 @@
 package pl.chatme.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -12,18 +13,18 @@ import pl.chatme.repository.ConversationMessageRepository;
 import pl.chatme.repository.ConversationRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationMessageService;
-import pl.chatme.service.exception.NotFoundException;
+import pl.chatme.exception.NotFoundException;
+import pl.chatme.util.DateUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 class ConversationMessageServiceImpl implements ConversationMessageService {
 
@@ -64,7 +65,6 @@ class ConversationMessageServiceImpl implements ConversationMessageService {
         return conversationMessageRepository.save(newMessage);
     }
 
-
     @Override
     public List<ConversationMessageDTO> getMessagesWithSizeAndBeforeTime(String senderUsername, long conversationId, String beforeTime, int size) {
 
@@ -75,13 +75,12 @@ class ConversationMessageServiceImpl implements ConversationMessageService {
                 .filter(conversation -> conversation.getSender().equals(user))
                 .map(senderConversation -> {
                     var chatMessageList = conversationMessageRepository
-                            .findUserConversationMessagesBeforeTime(senderConversation.getSender().getId(),
-                                    senderConversation.getRecipient().getId(),
-                                    LocalDateTime.parse(beforeTime, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")),
+                            .findUserConversationMessagesBeforeTime(senderConversation.getId(),
+                                    senderConversation.getConversationWith().getId(),
+                                    DateUtils.convertStringDateToOffsetTime(beforeTime),
                                     PageRequest.of(0, size));
                     chatMessageList.sort((o1, o2) -> o2.getTime().compareTo(o1.getTime()));
-                    return chatMessageList
-                            .stream()
+                    return chatMessageList.stream()
                             .map(conversationMessageMapper::mapToConversationMessageDTO)
                             .collect(Collectors.toList());
                 })

@@ -8,28 +8,23 @@ import pl.chatme.domain.ConversationMessage;
 import pl.chatme.domain.User;
 import pl.chatme.domain.enumerated.MessageStatus;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
+/**
+ * Spring Data JPA repository for the {@link ConversationMessage} entity.
+ */
 public interface ConversationMessageRepository extends JpaRepository<ConversationMessage, Long> {
 
-    // TODO : simplify
     @Query(
             value = "SELECT * FROM conversation_message " +
-                    "WHERE ((user_sender_id = :sender AND user_recipient_id = :recipient) " +
-                    "OR (user_sender_id = :recipient AND user_recipient_id = :sender)) AND time < :beforeTime " +
-                    "ORDER BY time DESC",
+                    "WHERE (conversation_id = :c1Id OR conversation_id = :c2Id) AND time < :beforeTime ORDER BY time DESC",
             nativeQuery = true)
-    List<ConversationMessage> findUserConversationMessagesBeforeTime(long sender, long recipient,
-                                                                     LocalDateTime beforeTime,
-                                                                     Pageable pageable);
+    List<ConversationMessage> findUserConversationMessagesBeforeTime(long c1Id, long c2Id, OffsetDateTime beforeTime,
+                                                                     Pageable p);
 
     List<ConversationMessage> findByConversationOrConversation(Conversation c1, Conversation c2, Pageable pageable);
 
-    List<ConversationMessage> findByRecipientAndMessageStatus(User recipient, MessageStatus status);
-
     List<ConversationMessage> findByRecipientAndMessageStatusAndConversation(User recipient, MessageStatus status,
                                                                              Conversation conversation);
-
-
 }

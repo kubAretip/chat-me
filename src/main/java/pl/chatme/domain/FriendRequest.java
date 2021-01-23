@@ -21,6 +21,9 @@ public class FriendRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "sent_time", nullable = false)
+    public OffsetDateTime sentTime;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_sender_id", nullable = false)
     private User sender;
@@ -28,9 +31,6 @@ public class FriendRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_recipient_id", nullable = false)
     private User recipient;
-
-    @Column(name = "sent_time", nullable = false)
-    public OffsetDateTime sentTime;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

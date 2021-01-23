@@ -6,8 +6,8 @@ import pl.chatme.domain.User;
 import pl.chatme.repository.ConversationRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationService;
-import pl.chatme.service.exception.AlreadyExistsException;
-import pl.chatme.service.exception.NotFoundException;
+import pl.chatme.exception.AlreadyExistsException;
+import pl.chatme.exception.NotFoundException;
 
 import javax.transaction.Transactional;
 import java.util.List;

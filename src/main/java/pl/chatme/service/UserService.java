@@ -6,7 +6,7 @@ import pl.chatme.dto.UserDTO;
 public interface UserService {
     User createUser(UserDTO userDTO, String password);
 
-    boolean activateUser(String activationKey);
+    void activateUser(String activationKey);
 
     User renewFriendRequestCode(String username);
 
