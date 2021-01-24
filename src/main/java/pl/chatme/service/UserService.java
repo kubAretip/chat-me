@@ -13,4 +13,6 @@ public interface UserService {
     User changeUserPassword(String username, String currentPassword, String newPassword);
 
     User getUser(String name);
+
+    User modifyUserInformation(long userId,UserDTO userDTO, String username);
 }

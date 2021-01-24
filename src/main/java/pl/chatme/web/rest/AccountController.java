@@ -8,6 +8,7 @@ import pl.chatme.dto.mapper.UserMapper;
 import pl.chatme.service.SendMailService;
 import pl.chatme.service.UserService;
 import pl.chatme.web.rest.vm.ChangePasswordVM;
+import pl.chatme.web.rest.vm.ModifyUserRequestVM;
 import pl.chatme.web.rest.vm.UserVM;
 
 import javax.validation.Valid;
@@ -91,6 +92,25 @@ public class AccountController {
         return ResponseEntity.ok(userMapper.mapToUserDTO(userService.changeUserPassword(principal.getName(),
                 changePasswordVM.getCurrentPassword(),
                 changePasswordVM.getNewPassword())));
+    }
+
+    /**
+     * {@code PATCH /accounts/{id}} : modify user information by id.
+     *
+     * @param userId              edited user's id
+     * @param modifyUserRequestVM VM object with supported fields to modify
+     * @param principal           Authenticated user
+     * @return 200 is success and body with UserDTO, 400 if field validation gone wrong or not the owner try to modify account information
+     * @see ModifyUserRequestVM you can see what fields you can change
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserDTO> changeUserInformation(@PathVariable("id") Long userId,
+                                                         @Valid @RequestBody ModifyUserRequestVM modifyUserRequestVM,
+                                                         Principal principal) {
+        var userDTO = new UserDTO();
+        userDTO.setFirstName(modifyUserRequestVM.getFirstName());
+        userDTO.setLastName(modifyUserRequestVM.getLastName());
+        return ResponseEntity.ok(userMapper.mapToUserDTO(userService.modifyUserInformation(userId, userDTO, principal.getName())));
     }
 
 }

@@ -141,4 +141,22 @@ class UserServiceImpl implements UserService {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }
+
+    @Override
+    public User modifyUserInformation(long userId, UserDTO userDTO, String username) {
+        return userRepository.findOneByLoginIgnoreCase(username)
+                .map(user -> {
+                    if (!user.getId().equals(userId)) {
+                        throw new InvalidDataException(translator.translate("exception.invalid.action"),
+                                translator.translate("exception.modify.user.not.owner"));
+                    }
+
+                    user.setFirstName(userDTO.getFirstName());
+                    user.setLastName(userDTO.getLastName());
+
+                    return userRepository.save(user);
+                })
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
+    }
+
 }

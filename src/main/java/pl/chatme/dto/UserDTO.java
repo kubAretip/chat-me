@@ -32,6 +32,7 @@ public class UserDTO {
     private String lastName;
 
     @Email
+    @NotBlank
     private String email;
 
     @NotNull
