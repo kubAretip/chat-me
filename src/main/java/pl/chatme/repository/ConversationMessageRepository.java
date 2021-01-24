@@ -25,6 +25,10 @@ public interface ConversationMessageRepository extends JpaRepository<Conversatio
 
     List<ConversationMessage> findByConversationOrConversation(Conversation c1, Conversation c2, Pageable pageable);
 
+    List<ConversationMessage> findByConversationOrConversation(Conversation c1, Conversation c2);
+
     List<ConversationMessage> findByRecipientAndMessageStatusAndConversation(User recipient, MessageStatus status,
                                                                              Conversation conversation);
+
+    void deleteByIdIn(List<Long> ids);
 }

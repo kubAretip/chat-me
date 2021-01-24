@@ -1,6 +1,7 @@
 package pl.chatme.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import pl.chatme.domain.FriendRequest;
 import pl.chatme.domain.User;
@@ -25,5 +26,10 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
     List<FriendRequest> findBySenderAndStatus(User sender, FriendRequestStatus status);
 
     List<FriendRequest> findByRecipientAndStatus(User recipient, FriendRequestStatus status);
+
+    @Modifying
+    @Query(value = "DELETE FROM friend_request WHERE (user_sender_id=:user1 AND user_recipient_id=:user2)" +
+            "OR (user_sender_id=:user2 AND user_recipient_id=:user1)", nativeQuery = true)
+    void deleteFriendRequestByUsers(Long user1, Long user2);
 
 }

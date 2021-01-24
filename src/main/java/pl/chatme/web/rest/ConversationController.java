@@ -1,9 +1,7 @@
 package pl.chatme.web.rest;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.chatme.dto.ConversationDTO;
 import pl.chatme.dto.mapper.ConversationMapper;
 import pl.chatme.service.ConversationService;
@@ -38,6 +36,20 @@ public class ConversationController {
                 .stream()
                 .map(conversationMapper::mapToConversationDTO)
                 .collect(Collectors.toList()));
+    }
+
+    /**
+     * {@code DELETE /conversation/{id}} : delete conversation (also delete all messages and accepted friend request)
+     * Authenticated user is sender
+     *
+     * @param conversationId conversation id
+     * @param principal      Authenticated user
+     * @return 204 if success, 400 if user is not one of the owner of conversation
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUserConversation(@PathVariable("id") long conversationId, Principal principal) {
+        conversationService.deleteConversation(principal.getName(), conversationId);
+        return ResponseEntity.noContent().build();
     }
 
 }

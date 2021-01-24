@@ -13,4 +13,6 @@ public interface ConversationService {
     void createUsersConversation(User user1, User user2);
 
     List<Conversation> getSenderConversation(String username);
+
+    void deleteConversation(String username, long conversationId);
 }
