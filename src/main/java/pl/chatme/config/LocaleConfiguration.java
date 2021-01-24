@@ -2,6 +2,7 @@ package pl.chatme.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleContextResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -16,10 +17,11 @@ import java.util.TimeZone;
 @Configuration
 public class LocaleConfiguration implements WebMvcConfigurer {
 
-    // Configure time zone to UTC
+    // Configure time zone to UTC and default locale to en
     @PostConstruct
-    public void configureZone() {
+    public void setupDefaults() {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        LocaleContextHolder.setDefaultLocale(Locale.ENGLISH);
     }
 
     // Registration interceptor
