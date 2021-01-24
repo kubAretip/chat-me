@@ -18,19 +18,18 @@ public class ConversationMessageController {
         this.conversationMessageService = conversationMessageService;
     }
 
-    // TODO : change method name
     @GetMapping(params = {"conversation_id", "size"})
-    public ResponseEntity<List<ConversationMessageDTO>> getMessageWithSize(@RequestParam("conversation_id") long conversationId,
-                                                                           @RequestParam("size") int size,
-                                                                           Principal principal) {
+    public ResponseEntity<List<ConversationMessageDTO>> getUserConversationMessages(@RequestParam("conversation_id") long conversationId,
+                                                                                    @RequestParam("size") int size,
+                                                                                    Principal principal) {
         return ResponseEntity.ok(conversationMessageService.getMessagesWithSize(principal.getName(), conversationId, size));
     }
 
     @GetMapping(params = {"conversation_id", "size", "before_time"})
-    public ResponseEntity<List<ConversationMessageDTO>> getOneToOneConversation(@RequestParam("conversation_id") long conversationId,
-                                                                                @RequestParam("size") int size,
-                                                                                @RequestParam("before_time") String beforeTime,
-                                                                                Principal principal) {
+    public ResponseEntity<List<ConversationMessageDTO>> getUserConversationMessages(@RequestParam("conversation_id") long conversationId,
+                                                                                    @RequestParam("size") int size,
+                                                                                    @RequestParam("before_time") String beforeTime,
+                                                                                    Principal principal) {
 
         return ResponseEntity.ok(conversationMessageService.getMessagesWithSizeAndBeforeTime(principal.getName(), conversationId, beforeTime, size));
     }
