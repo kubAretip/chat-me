@@ -29,11 +29,25 @@ public class AccountController {
         this.sendMailService = sendMailService;
     }
 
+    /**
+     * {@code GET /accounts} : get information of logged user
+     *
+     * @param principal Authenticated user
+     * @return DTO representation of User entity. If user not found return 404 else 200.
+     */
     @GetMapping
     public ResponseEntity<UserDTO> getCurrentLoggedUser(Principal principal) {
         return ResponseEntity.ok(userMapper.mapToUserDTO(userService.getUser(principal.getName())));
     }
 
+    /**
+     * {@code POST /accounts/register} : register new user
+     *
+     * @param userVM               Class which is representation of required fields to provide successfully registration.
+     * @param uriComponentsBuilder uri builder needed to build location header
+     * @return 200 and DTO representation of User entity if success, 409 if login or email are already in use, 400 if some of required
+     * fields not inserted.
+     */
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody UserVM userVM, UriComponentsBuilder uriComponentsBuilder) {
         var user = userService.createUser(userVM, userVM.getPassword());
@@ -42,9 +56,8 @@ public class AccountController {
         return ResponseEntity.created(uri.toUri()).body(userMapper.mapToUserDTO(user));
     }
 
-
     /**
-     * {@code  PATCH /activate} : activate the registered user.
+     * {@code  PATCH /accounts/activate} : activate the registered user.
      *
      * @param activationKey the activation key generated during registration.
      * @return When activation process is successful 204 else 404.
@@ -55,11 +68,24 @@ public class AccountController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * {@code PATCH /accounts/renew-friend-code} : generate new friends code.
+     *
+     * @param principal Authenticated user
+     * @return 404 if user not exists else 200 and DTO representation of User entity.
+     */
     @PatchMapping("/renew-friend-code")
     public ResponseEntity<UserDTO> renewFriendRequestCode(Principal principal) {
         return ResponseEntity.ok(userMapper.mapToUserDTO(userService.renewFriendRequestCode(principal.getName())));
     }
 
+    /**
+     * {@code PATCH /accounts/change-password} : change user password
+     *
+     * @param changePasswordVM Class which is representation of required fields to provide change password.
+     * @param principal        Authenticated user
+     * @return 400 if current password is incorrect else 200 and DTO representation of User entity.
+     */
     @PatchMapping("/change-password")
     public ResponseEntity<UserDTO> changeUserPassword(@Valid @RequestBody ChangePasswordVM changePasswordVM, Principal principal) {
         return ResponseEntity.ok(userMapper.mapToUserDTO(userService.changeUserPassword(principal.getName(),

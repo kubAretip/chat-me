@@ -35,6 +35,14 @@ public class FriendRequestController {
         this.translator = translator;
     }
 
+    /**
+     * {@code GET /friends-request} : get friends request with SENT status that have been sent to the user.
+     * Authenticated user is recipient.
+     *
+     * @param principal authenticated user
+     * @return if success 200 and list of DTOs representation of FriendRequest entity or 200 and empty list if not exists ant friends
+     * request, 404 if authenticated user not found
+     */
     @GetMapping
     public ResponseEntity<List<FriendRequestDTO>> getReceivedFriendRequests(Principal principal) {
         return ResponseEntity.ok(friendRequestService.fetchAllFriendsRequestForRecipient(principal.getName())
@@ -43,7 +51,14 @@ public class FriendRequestController {
                 .collect(Collectors.toList()));
     }
 
-
+    /**
+     * {@code GET /friends-request} : get friends request with SENT status that have been sent by user. Authenticated user is sender.
+     *
+     * @param status    status of friends request
+     * @param principal authenticated user
+     * @return if success 200 and list of DTOs representation of FriendRequest entity or 200 and empty list if not exists ant friends
+     * request, 400 if status is not supported, 404 if authenticated user not found
+     */
     @GetMapping(params = {"status"})
     public ResponseEntity<List<FriendRequestDTO>> getSentFriendsRequestByStatus(@RequestParam("status") String status,
                                                                                 Principal principal) {
@@ -63,6 +78,15 @@ public class FriendRequestController {
                 .build();
     }
 
+    /**
+     * {@code POST /friends-request} : create new friends request
+     *
+     * @param inviteCode           friends request code generated during registration
+     * @param principal            authenticated user
+     * @param uriComponentsBuilder uri builder needed to build location header
+     * @return 204 if success and DTO representation of FriendRequest entity, 404 if not found user with invite code, 400 when the
+     * owner of friends request code is authenticated user, 409 if already sent or recipient already sent to authenticated user
+     */
     @PostMapping(params = {"invite_code"})
     public ResponseEntity<FriendRequestDTO> createNewFriendsRequest(@RequestParam("invite_code") String inviteCode,
                                                                     Principal principal,
@@ -75,6 +99,16 @@ public class FriendRequestController {
 
     }
 
+    /**
+     * {@code PATCH /friends-request/{id}} : reply to friends request. Only recipient of friend request can provide the answer.
+     * Authenticated user is recipient
+     *
+     * @param friendRequestId friends request id
+     * @param accept          true = accept friends request, false = reject friends request
+     * @param principal       authenticated user
+     * @return 200 if accepted and DTO representation of FriendRequest entity, 204 if rejected, 400 if already accepted, 400 if
+     * authenticated user is not recipient, 404 if friends request not found.
+     */
     @PatchMapping(path = "/{id}", params = {"accept"})
     public ResponseEntity<FriendRequestDTO> replyToFriendsRequest(@PathVariable("id") long friendRequestId,
                                                                   @RequestParam("accept") boolean accept,
@@ -94,6 +128,14 @@ public class FriendRequestController {
 
     }
 
+    /**
+     * {@code DELETE /friends-request/{id}} : cancel friends request with status SENT. Only for sender.
+     * Authenticated user is sender.
+     *
+     * @param id        friends request id
+     * @param principal authenticated user
+     * @return 204 if success, 400 if authenticated user is not sender, 400 if friends request status != SENT
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSentFriendsRequestById(@PathVariable("id") Long id, Principal principal) {
         friendRequestService.deleteFriendRequest(principal.getName(), id);
