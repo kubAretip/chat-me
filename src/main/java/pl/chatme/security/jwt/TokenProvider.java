@@ -67,7 +67,6 @@ public class TokenProvider {
     }
 
     public DecodedJWT decodeToken(String token) {
-        log.debug("Decode token: {}", token);
         try {
             return JWT.require(jwtAlgorithm)
                     .build()
@@ -92,7 +91,6 @@ public class TokenProvider {
 
     // Reads the JWT from the authorization header and validate the token
     public UsernamePasswordAuthenticationToken getAuthentication(String tokenString) {
-        log.debug("Getting authentication from token {}", tokenString);
         if (tokenString != null) {
 
             var decodedToken = decodeToken(tokenString);

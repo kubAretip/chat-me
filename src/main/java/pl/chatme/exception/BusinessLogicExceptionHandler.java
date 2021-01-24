@@ -26,7 +26,7 @@ public class BusinessLogicExceptionHandler {
         return new ResponseEntity<>(problem, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(value = {InvalidDataException.class})
+    @ExceptionHandler(value = {InvalidDataException.class, UnsupportedDateFormatException.class})
     public ResponseEntity<Problem> handleInvalidDataException(InvalidDataException ex) {
         var problem = Problem.builder()
                 .withStatus(Status.BAD_REQUEST)

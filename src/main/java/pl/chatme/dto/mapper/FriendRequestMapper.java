@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import pl.chatme.domain.FriendRequest;
 import pl.chatme.dto.FriendRequestDTO;
+import pl.chatme.util.DateUtils;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,7 +20,7 @@ public interface FriendRequestMapper {
     FriendRequestDTO mapToFriendRequestDTO(FriendRequest entity);
 
     default String convertTime(OffsetDateTime time) {
-        return time.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+        return time.format(DateTimeFormatter.ofPattern(DateUtils.DATE_PATTERN));
     }
 
 }

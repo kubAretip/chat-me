@@ -17,4 +17,8 @@ public class Translator {
         return resourceBundleMessageSource.getMessage(code, null, LocaleContextHolder.getLocale());
     }
 
+    public String translate(String code, Object[] args) {
+        return resourceBundleMessageSource.getMessage(code, args, LocaleContextHolder.getLocale());
+    }
+
 }

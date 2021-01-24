@@ -16,6 +16,8 @@ import pl.chatme.repository.AuthorityRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.security.AuthoritiesConstants;
 import pl.chatme.service.UserService;
+import pl.chatme.util.ExceptionUtils;
+import pl.chatme.util.Translator;
 
 import java.util.HashSet;
 
@@ -27,15 +29,21 @@ class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthorityRepository authorityRepository;
+    private final Translator translator;
+    private final ExceptionUtils exceptionUtils;
 
     public UserServiceImpl(UserRepository userRepository,
                            UserMapper userMapper,
                            PasswordEncoder passwordEncoder,
-                           AuthorityRepository authorityRepository) {
+                           AuthorityRepository authorityRepository,
+                           Translator translator,
+                           ExceptionUtils exceptionUtils) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
+        this.translator = translator;
+        this.exceptionUtils = exceptionUtils;
     }
 
     @Override
@@ -45,14 +53,16 @@ class UserServiceImpl implements UserService {
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw new AlreadyExistsException("Incorrect login.", "Login already used.");
+                        throw new AlreadyExistsException(translator.translate("exception.incorrect.login"),
+                                translator.translate("exception.incorrect.login.body"));
                 });
 
         userRepository.findOneByEmailIgnoreCase(userDTO.getEmail())
                 .ifPresent(existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed)
-                        throw new AlreadyExistsException("Incorrect email.", "Email is already in use.");
+                        throw new AlreadyExistsException(translator.translate("exception.incorrect.email"),
+                                translator.translate("exception.incorrect.email.body"));
                 });
 
         var newUser = userMapper.mapToUser(userDTO);
@@ -72,7 +82,8 @@ class UserServiceImpl implements UserService {
     public void activateUser(String activationKey) {
 
         if (Strings.isNullOrEmpty(activationKey))
-            throw new NotFoundException("Invalid activation key", "Activation key not exists");
+            throw new InvalidDataException(translator.translate("exception.invalid.activation.key"),
+                    translator.translate("exception.invalid.activation.key.body"));
 
         userRepository.findOneByActivationKey(activationKey)
                 .map(user -> {
@@ -82,7 +93,8 @@ class UserServiceImpl implements UserService {
                     userRepository.save(user);
                     return true;
                 })
-                .orElseThrow(() -> new NotFoundException("Invalid activation key", "Activation key not exists"));
+                .orElseThrow(() -> new NotFoundException(translator.translate("exception.invalid.activation.key"),
+                        translator.translate("exception.invalid.activation.key.body2")));
     }
 
 
@@ -93,7 +105,7 @@ class UserServiceImpl implements UserService {
                     user.setFriendRequestCode(generateFriendRequestCode(user.getLogin()));
                     return userRepository.save(user);
                 })
-                .orElseThrow(() -> new NotFoundException("User not found", "User with login = " + login + " not exists."));
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(login));
     }
 
     private boolean removeNonActivatedUser(User existingUser) {
@@ -117,15 +129,16 @@ class UserServiceImpl implements UserService {
                         user.setPassword(passwordEncoder.encode(newPassword));
                         return userRepository.save(user);
                     } else {
-                        throw new InvalidDataException("Invalid data.", "Incorrect current password");
+                        throw new InvalidDataException(translator.translate("exception.invalid.password"),
+                                translator.translate("exception.invalid.password.body"));
                     }
                 })
-                .orElseThrow(() -> new NotFoundException("User not found", "User with login = " + username + " not exists."));
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }
 
     @Override
     public User getUser(String username) {
         return userRepository.findOneByLoginIgnoreCase(username)
-                .orElseThrow(() -> new NotFoundException("User not found", "User with login = " + username + " not exists."));
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }
 }

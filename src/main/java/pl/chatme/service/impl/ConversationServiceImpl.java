@@ -3,11 +3,12 @@ package pl.chatme.service.impl;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.Conversation;
 import pl.chatme.domain.User;
+import pl.chatme.exception.AlreadyExistsException;
 import pl.chatme.repository.ConversationRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationService;
-import pl.chatme.exception.AlreadyExistsException;
-import pl.chatme.exception.NotFoundException;
+import pl.chatme.util.ExceptionUtils;
+import pl.chatme.util.Translator;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -18,14 +19,19 @@ class ConversationServiceImpl implements ConversationService {
 
     private final ConversationRepository conversationRepository;
     private final UserRepository userRepository;
+    private final Translator translator;
+    private final ExceptionUtils exceptionUtils;
 
     public ConversationServiceImpl(ConversationRepository conversationRepository,
-                                   UserRepository userRepository) {
+                                   UserRepository userRepository,
+                                   Translator translator,
+                                   ExceptionUtils exceptionUtils) {
         this.conversationRepository = conversationRepository;
         this.userRepository = userRepository;
+        this.translator = translator;
+        this.exceptionUtils = exceptionUtils;
     }
 
-    //TODO add exceptions
     @Transactional
     @Override
     public Optional<Conversation> getConversation(String senderUsername, long recipientUserId) {
@@ -38,9 +44,9 @@ class ConversationServiceImpl implements ConversationService {
             var recipient = recipientUserOptional.get();
 
             return conversationRepository.findBySenderAndRecipient(sender, recipient);
+        } else {
+            throw exceptionUtils.conversationNotFoundException();
         }
-
-        return Optional.empty();
     }
 
 
@@ -68,7 +74,8 @@ class ConversationServiceImpl implements ConversationService {
             conversationRepository.save(conversationForSecondUser);
 
         } else {
-            throw new AlreadyExistsException("Something gone wrong.", "Conversation for users already exists.");
+            throw new AlreadyExistsException(translator.translate("exception.invalid.action"),
+                    translator.translate("exception.conversation.already.exists"));
         }
     }
 
@@ -76,8 +83,7 @@ class ConversationServiceImpl implements ConversationService {
     public List<Conversation> getSenderConversation(String username) {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(conversationRepository::findBySender)
-                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }
-
 
 }

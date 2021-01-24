@@ -10,6 +10,7 @@ import pl.chatme.dto.FriendRequestDTO;
 import pl.chatme.dto.mapper.FriendRequestMapper;
 import pl.chatme.service.ConversationService;
 import pl.chatme.service.FriendRequestService;
+import pl.chatme.util.Translator;
 
 import java.security.Principal;
 import java.util.List;
@@ -22,13 +23,16 @@ public class FriendRequestController {
     private final FriendRequestService friendRequestService;
     private final FriendRequestMapper friendRequestMapper;
     private final ConversationService conversationService;
+    private final Translator translator;
 
     public FriendRequestController(FriendRequestService friendRequestService,
                                    FriendRequestMapper friendRequestMapper,
-                                   ConversationService conversationService) {
+                                   ConversationService conversationService,
+                                   Translator translator) {
         this.friendRequestService = friendRequestService;
         this.friendRequestMapper = friendRequestMapper;
         this.conversationService = conversationService;
+        this.translator = translator;
     }
 
     @GetMapping
@@ -53,9 +57,9 @@ public class FriendRequestController {
         }
 
         throw Problem.builder()
-                .withTitle("Invalid param status value")
+                .withTitle(translator.translate("exception.invalid.param.title"))
                 .withStatus(Status.BAD_REQUEST)
-                .withDetail("We not support searching by status = " + status)
+                .withDetail(translator.translate("exception.invalid.searching.status.param.body", new Object[]{status}))
                 .build();
     }
 
@@ -92,10 +96,8 @@ public class FriendRequestController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSentFriendsRequestById(@PathVariable("id") Long id, Principal principal) {
-
         friendRequestService.deleteFriendRequest(principal.getName(), id);
         return ResponseEntity.noContent().build();
-
     }
 
 

@@ -5,16 +5,13 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
-public class DateUtils {
+public final class DateUtils {
 
-    private static final String DATE_PATTERN = "dd.MM.yyyy HH:mm:ss";
+    public static final String DATE_PATTERN = "dd.MM.yyyy HH:mm:ss";
 
     public static OffsetDateTime convertStringDateToOffsetTime(String time) {
-        var zone = TimeZone.getDefault();
-
         var localDateTime = LocalDateTime.parse(time, DateTimeFormatter.ofPattern(DATE_PATTERN));
-        var zoneOffset = zone.toZoneId().getRules().getOffset(localDateTime);
+        var zoneOffset = TimeZone.getDefault().toZoneId().getRules().getOffset(localDateTime);
         return localDateTime.atOffset(zoneOffset);
     }
-
 }

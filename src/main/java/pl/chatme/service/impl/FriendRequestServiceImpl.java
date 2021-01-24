@@ -4,12 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.FriendRequest;
 import pl.chatme.domain.enumerated.FriendRequestStatus;
-import pl.chatme.repository.FriendRequestRepository;
-import pl.chatme.repository.UserRepository;
-import pl.chatme.service.FriendRequestService;
 import pl.chatme.exception.AlreadyExistsException;
 import pl.chatme.exception.InvalidDataException;
 import pl.chatme.exception.NotFoundException;
+import pl.chatme.repository.FriendRequestRepository;
+import pl.chatme.repository.UserRepository;
+import pl.chatme.service.FriendRequestService;
+import pl.chatme.util.ExceptionUtils;
+import pl.chatme.util.Translator;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -20,11 +22,17 @@ class FriendRequestServiceImpl implements FriendRequestService {
 
     private final FriendRequestRepository friendRequestRepository;
     private final UserRepository userRepository;
+    private final Translator translator;
+    private final ExceptionUtils exceptionUtils;
 
     public FriendRequestServiceImpl(FriendRequestRepository friendRequestRepository,
-                                    UserRepository userRepository) {
+                                    UserRepository userRepository,
+                                    Translator translator,
+                                    ExceptionUtils exceptionUtils) {
         this.friendRequestRepository = friendRequestRepository;
         this.userRepository = userRepository;
+        this.translator = translator;
+        this.exceptionUtils = exceptionUtils;
     }
 
     @Override
@@ -34,24 +42,25 @@ class FriendRequestServiceImpl implements FriendRequestService {
         var friendRequestRecipientOptional = userRepository.findByFriendRequestCode(friendRequestCode);
 
         if (senderOptional.isEmpty())
-            throw new NotFoundException("User not found.", "User with login " + senderUsername + " not exists.");
+            throw exceptionUtils.userNotFoundException(senderUsername);
 
         if (friendRequestRecipientOptional.isEmpty())
-            throw new NotFoundException("User not found.", "User with friend code " + friendRequestCode + " does not exist.");
+            throw new NotFoundException(translator.translate("user.not.found"),
+                    translator.translate("exception.user.activation.key.not.found", new Object[]{friendRequestCode}));
 
 
         var sender = senderOptional.get();
         var friendRequestRecipient = friendRequestRecipientOptional.get();
 
         if (sender.getFriendRequestCode().equals(friendRequestCode))
-            throw new InvalidDataException("You can't do this!", "You can not send a friend request to yourself.");
+            throw new InvalidDataException(translator.translate("exception.invalid.action"),
+                    translator.translate("exception.invalid.sent.yourself"));
 
-        var isAlreadyExistsFriendRequest = friendRequestRepository
-                .existsFriendsRequestForUsers(sender.getId(), friendRequestRecipient.getId());
-
-        if (isAlreadyExistsFriendRequest.isPresent()) {
-            throw new AlreadyExistsException("Already sent.", "We already register this friends request.");
-        }
+        friendRequestRepository.existsFriendsRequestForUsers(sender.getId(), friendRequestRecipient.getId())
+                .ifPresent(fr -> {
+                    throw new AlreadyExistsException(translator.translate("exception.already.sent.friends.request"),
+                            translator.translate("exception.already.sent.friends.request.body"));
+                });
 
         var newFriendRequest = new FriendRequest();
         newFriendRequest.setSender(sender);
@@ -68,11 +77,13 @@ class FriendRequestServiceImpl implements FriendRequestService {
                 .map(friendRequest -> {
 
                     if (friendRequest.getStatus().equals(FriendRequestStatus.ACCEPTED)) {
-                        throw new InvalidDataException("Already accepted.", "You already accepted this friend request.");
+                        throw new InvalidDataException(translator.translate("exception.invalid.action"),
+                                translator.translate("exception.friends.request.already.accepted"));
                     }
 
                     if (!friendRequest.getRecipient().getLogin().equals(recipientUsername)) {
-                        throw new InvalidDataException("You can't do this.", "You are not the recipient.");
+                        throw new InvalidDataException(translator.translate("exception.invalid.action"),
+                                translator.translate("exception.not.recipient"));
                     }
 
                     if (accept) {
@@ -82,22 +93,22 @@ class FriendRequestServiceImpl implements FriendRequestService {
                     }
                     return friendRequestRepository.save(friendRequest);
                 })
-                .orElseThrow((() -> new NotFoundException("Friend request not found.",
-                        "We can not find this friend request.")));
+                .orElseThrow((() -> new NotFoundException(translator.translate("exception.friends.request.not.found"),
+                        translator.translate("exception.friends.request.not.found.body"))));
     }
 
     @Override
     public List<FriendRequest> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status) {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(user -> friendRequestRepository.findBySenderAndStatus(user, status))
-                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }
 
     @Override
     public List<FriendRequest> fetchAllFriendsRequestForRecipient(String username) {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(user -> friendRequestRepository.findByRecipientAndStatus(user, FriendRequestStatus.SENT))
-                .orElseThrow(() -> new NotFoundException("User not found.", "User with login " + username + " not exists."));
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }
 
 
@@ -119,15 +130,17 @@ class FriendRequestServiceImpl implements FriendRequestService {
             friendRequestRepository.findById(id)
                     .ifPresent(friendRequest -> {
                         if (!friendRequest.getSender().equals(sender)) {
-                            throw new InvalidDataException("Invalid data", "You are not the friend request owner.");
+                            throw new InvalidDataException(translator.translate("exception.invalid.action"),
+                                    translator.translate("exception.friends.request.not.owner"));
                         }
                         if (!friendRequest.getStatus().equals(FriendRequestStatus.SENT))
-                            throw new InvalidDataException("Invalid data",
-                                    "You can't cancel friends request with status " + friendRequest.getStatus().name().toLowerCase());
+                            throw new InvalidDataException(translator.translate("exception.invalid.action"),
+                                    translator.translate("exception.friends.request.cancel.abort",
+                                            new Object[]{friendRequest.getStatus().name().toLowerCase()}));
 
                         friendRequestRepository.delete(friendRequest);
                     });
         } else
-            throw new NotFoundException("User not found.", "User with login " + senderUsername + " not exists.");
+            throw exceptionUtils.userNotFoundException(senderUsername);
     }
 }

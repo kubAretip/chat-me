@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 import pl.chatme.domain.Conversation;
 import pl.chatme.domain.ConversationMessage;
 import pl.chatme.dto.ConversationMessageDTO;
+import pl.chatme.util.DateUtils;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,7 +21,7 @@ public interface ConversationMessageMapper {
     ConversationMessageDTO mapToConversationMessageDTO(ConversationMessage conversationMessage);
 
     default String convertTime(OffsetDateTime time) {
-        return time.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+        return time.format(DateTimeFormatter.ofPattern(DateUtils.DATE_PATTERN));
     }
 
     default Long getConversationId(Conversation conversation) {
