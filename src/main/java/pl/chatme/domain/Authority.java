@@ -8,8 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -26,8 +24,6 @@ public class Authority implements Serializable {
 
     @Id
     @Column(length = 50, nullable = false, unique = true)
-    @NotBlank
-    @Size(max = 50)
     private String name;
 
     // To uppercase the authority name before saving it to db.

@@ -3,6 +3,7 @@ package pl.chatme.service.impl;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.Authority;
@@ -64,6 +65,9 @@ class UserServiceImpl implements UserService {
                         throw new AlreadyExistsException(translator.translate("exception.incorrect.email"),
                                 translator.translate("exception.incorrect.email.body"));
                 });
+        // capitalize the first letter of first name and last name
+        userDTO.setFirstName(StringUtils.capitalize(userDTO.getFirstName()));
+        userDTO.setLastName(StringUtils.capitalize(userDTO.getLastName()));
 
         var newUser = userMapper.mapToUser(userDTO);
         newUser.setPassword(passwordEncoder.encode(password));
@@ -158,5 +162,6 @@ class UserServiceImpl implements UserService {
                 })
                 .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }
+
 
 }
