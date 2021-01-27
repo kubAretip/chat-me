@@ -1,20 +1,20 @@
 package pl.chatme.service;
 
-import pl.chatme.domain.FriendRequest;
 import pl.chatme.domain.enumerated.FriendRequestStatus;
+import pl.chatme.dto.FriendRequestDTO;
 
 import java.util.List;
 
 public interface FriendRequestService {
-    FriendRequest createNewFriendsRequest(String senderUsername, String friendRequestCode);
+    FriendRequestDTO createNewFriendsRequest(String senderUsername, String friendRequestCode);
 
-    FriendRequest replyToFriendsRequest(long friendRequestId, String recipientUsername, boolean accept);
+    FriendRequestDTO replyToFriendsRequest(long friendRequestId, String recipientUsername, boolean accept);
 
-    List<FriendRequest> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status);
+    List<FriendRequestDTO> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status);
 
-    List<FriendRequest> fetchAllFriendsRequestForRecipient(String username);
+    List<FriendRequestDTO> fetchAllFriendsRequestForRecipient(String username);
 
-    void deleteRejectedFriendRequest(FriendRequest friendRequest);
+    void deleteFriendsRequest(long friendRequestId);
 
     void deleteFriendRequest(String senderUsername, Long id);
 }

@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import pl.chatme.domain.User;
+import pl.chatme.dto.UserDTO;
 import pl.chatme.service.SendMailService;
 import pl.chatme.util.Translator;
 
@@ -55,7 +55,7 @@ class MailServiceImpl implements SendMailService {
     }
 
     @Async
-    public void sendMailTemplate(User user, String template, String subjectCode) {
+    public void sendMailTemplate(UserDTO user, String template, String subjectCode) {
 
         var userEmail = user.getEmail();
         if (userEmail != null) {
@@ -73,7 +73,7 @@ class MailServiceImpl implements SendMailService {
 
     @Async
     @Override
-    public void sendActivationEmail(User user) {
+    public void sendActivationEmail(UserDTO user) {
         log.debug("Sending activation email to user with id {}", user.getId());
         sendMailTemplate(user, "mail/activationEmail", "email.activation.title");
     }

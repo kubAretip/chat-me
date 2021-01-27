@@ -1,18 +1,17 @@
 package pl.chatme.service;
 
-import pl.chatme.domain.User;
 import pl.chatme.dto.UserDTO;
 
 public interface UserService {
-    User createUser(UserDTO userDTO, String password);
+    UserDTO createUser(UserDTO userDTO, String password);
 
     void activateUser(String activationKey);
 
-    User renewFriendRequestCode(String username);
+    UserDTO renewFriendRequestCode(String username);
 
-    User changeUserPassword(String username, String currentPassword, String newPassword);
+    UserDTO changeUserPassword(String username, String currentPassword, String newPassword);
 
-    User getUser(String name);
+    UserDTO getUser(String name);
 
-    User modifyUserInformation(long userId,UserDTO userDTO, String username);
+    UserDTO modifyUserInformation(long userId, UserDTO userDTO, String username);
 }

@@ -1,7 +1,7 @@
 package pl.chatme.service;
 
-import pl.chatme.domain.User;
+import pl.chatme.dto.UserDTO;
 
 public interface SendMailService {
-    void sendActivationEmail(User user);
+    void sendActivationEmail(UserDTO user);
 }

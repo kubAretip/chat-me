@@ -7,30 +7,25 @@ import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 import pl.chatme.domain.enumerated.FriendRequestStatus;
 import pl.chatme.dto.FriendRequestDTO;
-import pl.chatme.dto.mapper.FriendRequestMapper;
 import pl.chatme.service.ConversationService;
 import pl.chatme.service.FriendRequestService;
 import pl.chatme.util.Translator;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/friends-request")
 public class FriendRequestController {
 
     private final FriendRequestService friendRequestService;
-    private final FriendRequestMapper friendRequestMapper;
     private final ConversationService conversationService;
     private final Translator translator;
 
     public FriendRequestController(FriendRequestService friendRequestService,
-                                   FriendRequestMapper friendRequestMapper,
                                    ConversationService conversationService,
                                    Translator translator) {
         this.friendRequestService = friendRequestService;
-        this.friendRequestMapper = friendRequestMapper;
         this.conversationService = conversationService;
         this.translator = translator;
     }
@@ -45,10 +40,7 @@ public class FriendRequestController {
      */
     @GetMapping
     public ResponseEntity<List<FriendRequestDTO>> getReceivedFriendRequests(Principal principal) {
-        return ResponseEntity.ok(friendRequestService.fetchAllFriendsRequestForRecipient(principal.getName())
-                .stream()
-                .map(friendRequestMapper::mapToFriendRequestDTO)
-                .collect(Collectors.toList()));
+        return ResponseEntity.ok(friendRequestService.fetchAllFriendsRequestForRecipient(principal.getName()));
     }
 
     /**
@@ -64,11 +56,7 @@ public class FriendRequestController {
                                                                                 Principal principal) {
 
         if (status.equalsIgnoreCase(FriendRequestStatus.SENT.name())) {
-            return ResponseEntity.ok(
-                    friendRequestService.getSenderFriendsRequestByStatus(principal.getName(), FriendRequestStatus.SENT)
-                            .stream()
-                            .map(friendRequestMapper::mapToFriendRequestDTO)
-                            .collect(Collectors.toList()));
+            return ResponseEntity.ok(friendRequestService.getSenderFriendsRequestByStatus(principal.getName(), FriendRequestStatus.SENT));
         }
 
         throw Problem.builder()
@@ -94,9 +82,7 @@ public class FriendRequestController {
 
         var newFriendRequest = friendRequestService.createNewFriendsRequest(principal.getName(), inviteCode);
         var uri = uriComponentsBuilder.path("/friends/{id}").buildAndExpand(newFriendRequest.getId());
-        return ResponseEntity.created(uri.toUri())
-                .body(friendRequestMapper.mapToFriendRequestDTO(newFriendRequest));
-
+        return ResponseEntity.created(uri.toUri()).body(newFriendRequest);
     }
 
     /**
@@ -116,16 +102,15 @@ public class FriendRequestController {
 
         var friendRequest = friendRequestService.replyToFriendsRequest(friendRequestId, principal.getName(), accept);
 
-        if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
-            // delete friend request
-            friendRequestService.deleteRejectedFriendRequest(friendRequest);
+        if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED.name().toUpperCase())) {
+            // delete rejected friend request
+            friendRequestService.deleteFriendsRequest(friendRequest.getId());
             return ResponseEntity.noContent().build();
         }
-
         // create conversation
         conversationService.createUsersConversation(friendRequest.getSender(), friendRequest.getRecipient());
-        return ResponseEntity.ok(friendRequestMapper.mapToFriendRequestDTO(friendRequest));
 
+        return ResponseEntity.ok(friendRequest);
     }
 
     /**

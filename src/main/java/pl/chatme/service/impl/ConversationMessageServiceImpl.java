@@ -4,20 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import pl.chatme.domain.Conversation;
 import pl.chatme.domain.ConversationMessage;
 import pl.chatme.domain.enumerated.MessageStatus;
 import pl.chatme.dto.ConversationMessageDTO;
 import pl.chatme.dto.mapper.ConversationMessageMapper;
-import pl.chatme.exception.UnsupportedDateFormatException;
 import pl.chatme.repository.ConversationMessageRepository;
 import pl.chatme.repository.ConversationRepository;
 import pl.chatme.repository.UserRepository;
 import pl.chatme.service.ConversationMessageService;
 import pl.chatme.util.DateUtils;
 import pl.chatme.util.ExceptionUtils;
-import pl.chatme.util.Translator;
 
+import javax.transaction.Transactional;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
@@ -45,22 +43,27 @@ class ConversationMessageServiceImpl implements ConversationMessageService {
         this.exceptionUtils = exceptionUtils;
     }
 
+    @Transactional
     @Override
-    public ConversationMessage saveConversationMessage(Conversation conversation, String content, String time) {
+    public ConversationMessageDTO saveConversationMessage(long conversationId, String content, String time) {
 
-        var newMessage = new ConversationMessage();
-
-        try {
-            newMessage.setTime(DateUtils.convertStringDateToOffsetTime(time));
-        } catch (DateTimeParseException ex) {
-            throw exceptionUtils.unsupportedDateFormatException();
-        }
-        newMessage.setContent(content);
-        newMessage.setConversation(conversation);
-        newMessage.setRecipient(conversation.getRecipient());
-        newMessage.setSender(conversation.getSender());
-        newMessage.setMessageStatus(MessageStatus.RECEIVED);
-        return conversationMessageRepository.save(newMessage);
+        return conversationRepository.findById(conversationId)
+                .map(conversation -> {
+                    var newMessage = new ConversationMessage();
+                    try {
+                        newMessage.setTime(DateUtils.convertStringDateToOffsetTime(time));
+                    } catch (DateTimeParseException ex) {
+                        throw exceptionUtils.unsupportedDateFormatException();
+                    }
+                    newMessage.setContent(content);
+                    newMessage.setConversation(conversation);
+                    newMessage.setRecipient(conversation.getRecipient());
+                    newMessage.setSender(conversation.getSender());
+                    newMessage.setMessageStatus(MessageStatus.RECEIVED);
+                    conversationMessageRepository.save(newMessage);
+                    return conversationMessageMapper.mapToConversationMessageDTO(newMessage);
+                })
+                .orElseThrow(exceptionUtils::conversationNotFoundException);
     }
 
     @Override

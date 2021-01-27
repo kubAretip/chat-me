@@ -3,7 +3,9 @@ package pl.chatme.service.impl;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.Conversation;
 import pl.chatme.domain.ConversationMessage;
-import pl.chatme.domain.User;
+import pl.chatme.dto.ConversationDTO;
+import pl.chatme.dto.UserDTO;
+import pl.chatme.dto.mapper.ConversationMapper;
 import pl.chatme.exception.AlreadyExistsException;
 import pl.chatme.exception.InvalidDataException;
 import pl.chatme.repository.ConversationMessageRepository;
@@ -15,8 +17,8 @@ import pl.chatme.util.ExceptionUtils;
 import pl.chatme.util.Translator;
 
 import javax.transaction.Transactional;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +26,7 @@ class ConversationServiceImpl implements ConversationService {
 
     private final ConversationRepository conversationRepository;
     private final ConversationMessageRepository conversationMessageRepository;
+    private final ConversationMapper conversationMapper;
     private final UserRepository userRepository;
     private final Translator translator;
     private final ExceptionUtils exceptionUtils;
@@ -34,35 +37,40 @@ class ConversationServiceImpl implements ConversationService {
                                    UserRepository userRepository,
                                    Translator translator,
                                    ExceptionUtils exceptionUtils,
-                                   FriendRequestRepository friendRequestRepository) {
+                                   FriendRequestRepository friendRequestRepository,
+                                   ConversationMapper conversationMapper) {
         this.conversationRepository = conversationRepository;
         this.conversationMessageRepository = conversationMessageRepository;
         this.userRepository = userRepository;
         this.translator = translator;
         this.exceptionUtils = exceptionUtils;
         this.friendRequestRepository = friendRequestRepository;
+        this.conversationMapper = conversationMapper;
     }
 
     @Transactional
     @Override
-    public Optional<Conversation> getConversation(String senderUsername, long recipientUserId) {
+    public ConversationDTO getConversation(String senderUsername, long recipientUserId) {
 
-        var senderUserOptional = userRepository.findOneByLoginIgnoreCase(senderUsername);
-        var recipientUserOptional = userRepository.findById(recipientUserId);
+        var sender = userRepository.findOneByLoginIgnoreCase(senderUsername)
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(senderUsername));
+        var recipient = userRepository.findById(recipientUserId)
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(recipientUserId));
 
-        if (senderUserOptional.isPresent() && recipientUserOptional.isPresent()) {
-            var sender = senderUserOptional.get();
-            var recipient = recipientUserOptional.get();
+        var conversation = conversationRepository.findBySenderAndRecipient(sender, recipient)
+                .orElseThrow(exceptionUtils::conversationNotFoundException);
+        return conversationMapper.mapToConversationDTO(conversation);
 
-            return conversationRepository.findBySenderAndRecipient(sender, recipient);
-        } else {
-            throw exceptionUtils.conversationNotFoundException();
-        }
     }
 
 
     @Override
-    public void createUsersConversation(User user1, User user2) {
+    public void createUsersConversation(UserDTO userDTO1, UserDTO userDTO2) {
+
+        var user1 = userRepository.findById(userDTO1.getId())
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(userDTO1.getId()));
+        var user2 = userRepository.findById(userDTO2.getId())
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(userDTO2.getId()));
 
         if (!conversationRepository.existsBySenderAndRecipient(user1, user2)
                 && !conversationRepository.existsBySenderAndRecipient(user2, user1)) {
@@ -91,10 +99,13 @@ class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public List<Conversation> getSenderConversation(String username) {
+    public List<ConversationDTO> getSenderConversation(String username) {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(conversationRepository::findBySender)
-                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(conversationMapper::mapToConversationDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional

@@ -48,7 +48,7 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(UserDTO userDTO, String password) {
+    public UserDTO createUser(UserDTO userDTO, String password) {
 
         userRepository.findOneByLoginIgnoreCase(userDTO.getLogin())
                 .ifPresent(existingUser -> {
@@ -79,7 +79,7 @@ class UserServiceImpl implements UserService {
         userRepository.save(newUser);
 
         log.debug("Registered new user {}", newUser);
-        return newUser;
+        return userMapper.mapToUserDTO(newUser);
     }
 
     @Override
@@ -103,11 +103,12 @@ class UserServiceImpl implements UserService {
 
 
     @Override
-    public User renewFriendRequestCode(String login) {
+    public UserDTO renewFriendRequestCode(String login) {
         return userRepository.findOneByLoginIgnoreCase(login)
                 .map(user -> {
                     user.setFriendRequestCode(generateFriendRequestCode(user.getLogin()));
-                    return userRepository.save(user);
+                    userRepository.save(user);
+                    return userMapper.mapToUserDTO(user);
                 })
                 .orElseThrow(() -> exceptionUtils.userNotFoundException(login));
     }
@@ -126,12 +127,13 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User changeUserPassword(String username, String currentPassword, String newPassword) {
+    public UserDTO changeUserPassword(String username, String currentPassword, String newPassword) {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(user -> {
                     if (passwordEncoder.matches(currentPassword, user.getPassword())) {
                         user.setPassword(passwordEncoder.encode(newPassword));
-                        return userRepository.save(user);
+                        userRepository.save(user);
+                        return userMapper.mapToUserDTO(user);
                     } else {
                         throw new InvalidDataException(translator.translate("exception.invalid.password"),
                                 translator.translate("exception.invalid.password.body"));
@@ -141,24 +143,23 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUser(String username) {
-        return userRepository.findOneByLoginIgnoreCase(username)
-                .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
+    public UserDTO getUser(String username) {
+        return userMapper.mapToUserDTO(userRepository.findOneByLoginIgnoreCase(username)
+                .orElseThrow(() -> exceptionUtils.userNotFoundException(username)));
     }
 
     @Override
-    public User modifyUserInformation(long userId, UserDTO userDTO, String username) {
+    public UserDTO modifyUserInformation(long userId, UserDTO userDTO, String username) {
         return userRepository.findOneByLoginIgnoreCase(username)
                 .map(user -> {
                     if (!user.getId().equals(userId)) {
                         throw new InvalidDataException(translator.translate("exception.invalid.action"),
                                 translator.translate("exception.modify.user.not.owner"));
                     }
-
                     user.setFirstName(userDTO.getFirstName());
                     user.setLastName(userDTO.getLastName());
-
-                    return userRepository.save(user);
+                    userRepository.save(user);
+                    return userMapper.mapToUserDTO(user);
                 })
                 .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
     }

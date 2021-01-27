@@ -18,6 +18,11 @@ public class ExceptionUtils {
                 translator.translate("exception.user.not.found.body", new Object[]{login}));
     }
 
+    public NotFoundException userNotFoundException(long id) {
+        return new NotFoundException(translator.translate("exception.user.not.found"),
+                translator.translate("exception.user.not.found.body2", new Object[]{id}));
+    }
+
     public NotFoundException conversationNotFoundException() {
         return new NotFoundException(translator.translate("exception.conversation.not.found"),
                 translator.translate("exception.conversation.not.found.body"));

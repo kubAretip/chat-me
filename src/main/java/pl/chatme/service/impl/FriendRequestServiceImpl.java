@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.chatme.domain.FriendRequest;
 import pl.chatme.domain.enumerated.FriendRequestStatus;
+import pl.chatme.dto.FriendRequestDTO;
+import pl.chatme.dto.mapper.FriendRequestMapper;
 import pl.chatme.exception.AlreadyExistsException;
 import pl.chatme.exception.InvalidDataException;
 import pl.chatme.exception.NotFoundException;
@@ -15,6 +17,7 @@ import pl.chatme.util.Translator;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,19 +27,22 @@ class FriendRequestServiceImpl implements FriendRequestService {
     private final UserRepository userRepository;
     private final Translator translator;
     private final ExceptionUtils exceptionUtils;
+    private final FriendRequestMapper friendRequestMapper;
 
     public FriendRequestServiceImpl(FriendRequestRepository friendRequestRepository,
                                     UserRepository userRepository,
                                     Translator translator,
-                                    ExceptionUtils exceptionUtils) {
+                                    ExceptionUtils exceptionUtils,
+                                    FriendRequestMapper friendRequestMapper) {
         this.friendRequestRepository = friendRequestRepository;
         this.userRepository = userRepository;
         this.translator = translator;
         this.exceptionUtils = exceptionUtils;
+        this.friendRequestMapper = friendRequestMapper;
     }
 
     @Override
-    public FriendRequest createNewFriendsRequest(String senderUsername, String friendRequestCode) {
+    public FriendRequestDTO createNewFriendsRequest(String senderUsername, String friendRequestCode) {
 
         var senderOptional = userRepository.findOneByLoginIgnoreCase(senderUsername);
         var friendRequestRecipientOptional = userRepository.findByFriendRequestCode(friendRequestCode);
@@ -67,12 +73,13 @@ class FriendRequestServiceImpl implements FriendRequestService {
         newFriendRequest.setRecipient(friendRequestRecipient);
         newFriendRequest.setStatus(FriendRequestStatus.SENT);
         newFriendRequest.setSentTime(OffsetDateTime.now());
-        return friendRequestRepository.save(newFriendRequest);
+        friendRequestRepository.save(newFriendRequest);
+        return friendRequestMapper.mapToFriendRequestDTO(newFriendRequest);
 
     }
 
     @Override
-    public FriendRequest replyToFriendsRequest(long friendRequestId, String recipientUsername, boolean accept) {
+    public FriendRequestDTO replyToFriendsRequest(long friendRequestId, String recipientUsername, boolean accept) {
         return friendRequestRepository.findById(friendRequestId)
                 .map(friendRequest -> {
 
@@ -91,32 +98,38 @@ class FriendRequestServiceImpl implements FriendRequestService {
                     } else {
                         friendRequest.setStatus(FriendRequestStatus.REJECTED);
                     }
-                    return friendRequestRepository.save(friendRequest);
+                    friendRequestRepository.save(friendRequest);
+                    return friendRequestMapper.mapToFriendRequestDTO(friendRequest);
                 })
                 .orElseThrow((() -> new NotFoundException(translator.translate("exception.friends.request.not.found"),
                         translator.translate("exception.friends.request.not.found.body"))));
     }
 
     @Override
-    public List<FriendRequest> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status) {
-        return userRepository.findOneByLoginIgnoreCase(username)
-                .map(user -> friendRequestRepository.findBySenderAndStatus(user, status))
+    public List<FriendRequestDTO> getSenderFriendsRequestByStatus(String username, FriendRequestStatus status) {
+        var user = userRepository.findOneByLoginIgnoreCase(username)
                 .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
+        return friendRequestRepository.findBySenderAndStatus(user, status)
+                .stream()
+                .map(friendRequestMapper::mapToFriendRequestDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<FriendRequest> fetchAllFriendsRequestForRecipient(String username) {
-        return userRepository.findOneByLoginIgnoreCase(username)
-                .map(user -> friendRequestRepository.findByRecipientAndStatus(user, FriendRequestStatus.SENT))
+    public List<FriendRequestDTO> fetchAllFriendsRequestForRecipient(String username) {
+        var user = userRepository.findOneByLoginIgnoreCase(username)
                 .orElseThrow(() -> exceptionUtils.userNotFoundException(username));
+
+        return friendRequestRepository.findByRecipientAndStatus(user, FriendRequestStatus.SENT)
+                .stream()
+                .map(friendRequestMapper::mapToFriendRequestDTO)
+                .collect(Collectors.toList());
     }
 
 
     @Override
-    public void deleteRejectedFriendRequest(FriendRequest friendRequest) {
-        if (friendRequest.getStatus().equals(FriendRequestStatus.REJECTED)) {
-            friendRequestRepository.delete(friendRequest);
-        }
+    public void deleteFriendsRequest(long friendRequestId) {
+        friendRequestRepository.deleteById(friendRequestId);
     }
 
 

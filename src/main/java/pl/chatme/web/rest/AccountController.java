@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import pl.chatme.dto.UserDTO;
-import pl.chatme.dto.mapper.UserMapper;
 import pl.chatme.service.SendMailService;
 import pl.chatme.service.UserService;
 import pl.chatme.web.rest.vm.ChangePasswordVM;
@@ -19,14 +18,11 @@ import java.security.Principal;
 public class AccountController {
 
     private final UserService userService;
-    private final UserMapper userMapper;
     private final SendMailService sendMailService;
 
     public AccountController(UserService userService,
-                             UserMapper userMapper,
                              SendMailService sendMailService) {
         this.userService = userService;
-        this.userMapper = userMapper;
         this.sendMailService = sendMailService;
     }
 
@@ -38,7 +34,7 @@ public class AccountController {
      */
     @GetMapping
     public ResponseEntity<UserDTO> getCurrentLoggedUser(Principal principal) {
-        return ResponseEntity.ok(userMapper.mapToUserDTO(userService.getUser(principal.getName())));
+        return ResponseEntity.ok(userService.getUser(principal.getName()));
     }
 
     /**
@@ -54,7 +50,7 @@ public class AccountController {
         var user = userService.createUser(userVM, userVM.getPassword());
         var uri = uriComponentsBuilder.path("/users/{id}").buildAndExpand(user.getId());
         sendMailService.sendActivationEmail(user);
-        return ResponseEntity.created(uri.toUri()).body(userMapper.mapToUserDTO(user));
+        return ResponseEntity.created(uri.toUri()).body(user);
     }
 
     /**
@@ -77,7 +73,7 @@ public class AccountController {
      */
     @PatchMapping("/renew-friend-code")
     public ResponseEntity<UserDTO> renewFriendRequestCode(Principal principal) {
-        return ResponseEntity.ok(userMapper.mapToUserDTO(userService.renewFriendRequestCode(principal.getName())));
+        return ResponseEntity.ok(userService.renewFriendRequestCode(principal.getName()));
     }
 
     /**
@@ -89,9 +85,9 @@ public class AccountController {
      */
     @PatchMapping("/change-password")
     public ResponseEntity<UserDTO> changeUserPassword(@Valid @RequestBody ChangePasswordVM changePasswordVM, Principal principal) {
-        return ResponseEntity.ok(userMapper.mapToUserDTO(userService.changeUserPassword(principal.getName(),
+        return ResponseEntity.ok(userService.changeUserPassword(principal.getName(),
                 changePasswordVM.getCurrentPassword(),
-                changePasswordVM.getNewPassword())));
+                changePasswordVM.getNewPassword()));
     }
 
     /**
@@ -110,7 +106,7 @@ public class AccountController {
         var userDTO = new UserDTO();
         userDTO.setFirstName(modifyUserRequestVM.getFirstName());
         userDTO.setLastName(modifyUserRequestVM.getLastName());
-        return ResponseEntity.ok(userMapper.mapToUserDTO(userService.modifyUserInformation(userId, userDTO, principal.getName())));
+        return ResponseEntity.ok(userService.modifyUserInformation(userId, userDTO, principal.getName()));
     }
 
 }
