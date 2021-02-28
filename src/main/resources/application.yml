@@ -1,13 +1,12 @@
 server:
   port: 8080
-  address: 127.0.0.1
   servlet:
     context-path: /api
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3310/chatmedb?createDatabaseIfNotExist=true&serverTimezone=UTC
-    password: ${DB_USERNAME}
-    username: ${DB_PASSWORD}
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?createDatabaseIfNotExist=true&serverTimezone=UTC
+    password: ${MYSQ_USERNAME}
+    username: ${MYSQ_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -25,24 +24,15 @@ spring:
         max-size: 25
         queue-capacity: 10000
   mail:
-    host: smtp.gmail.com
-    port: 587
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-    password: ${MAIL_PWD}
-    username: ${MAIL}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
 logging:
   level:
     pl:
       chatme: debug
 
 mail:
-  process-url: http://localhost:4200
+  process-url: ${MAIL_BASE_URL}
 
 # Json web token properties
 jwt:

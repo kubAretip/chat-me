@@ -1,0 +1,57 @@
+version: '3.8'
+
+volumes:
+  db_data:
+    name: chatme_vol
+    driver: local
+
+networks:
+  chat_me_net:
+    driver: bridge
+
+services:
+  mysql:
+    container_name: chat-me-db
+    image: library/mysql:8.0.22
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS_ROOT}
+    ports:
+      - 3310:3306
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - chat_me_net
+  api_backend:
+    container_name: chat-me-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQ_USERNAME: ${MYSQL_USERNAME}
+      MYSQ_PASSWORD: ${MYSQL_PASSWORD}
+      MAIL_BASE_URL: ${MAIL_BASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+    restart: always
+    networks:
+      - chat_me_net
+    ports:
+    - 8600:8080
+    depends_on:
+      - mysql
+      - mail_service
+  mail_service:
+    image: mailhog/mailhog
+    container_name: chat-me-mailhog
+    networks:
+      - chat_me_net
+    ports:
+      - 1026:1026 # smtp port
+      - 8026:8026 # web ui port
